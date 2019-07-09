@@ -56,6 +56,9 @@
     [[FBRoute POST:@"/wda/pressButton"] respondWithTarget:self action:@selector(handlePressButtonCommand:)],
     [[FBRoute POST:@"/wda/siri/activate"] respondWithTarget:self action:@selector(handleActivateSiri:)],
     [[FBRoute GET:@"/wda/device/info"] respondWithTarget:self action:@selector(handleGetDeviceInfo:)],
+    
+    //ADDED BY MO: waitForIdle
+    [[FBRoute POST:@"/wda/waitForIdle"] respondWithTarget:self action:@selector(handleWaitForIdle:)],
   ];
 }
 
@@ -265,6 +268,17 @@
   }
 
   return [localTimeZone name];
+}
+
+//ADDED BY MO: handle waitForIdle
+static NSString *const DEFAULT_TIMEOUT = @"5000";
++ (id<FBResponsePayload>)handleWaitForIdle:(FBRouteRequest *)request
+{
+  NSDate * start = [NSDate date];
+  FBApplication *application = request.session.activeApplication ?: [FBApplication fb_activeApplication];
+  [application fb_waitUntilSnapshotIsStable];
+  NSTimeInterval duration = [start timeIntervalSinceNow]*-1;
+  return FBResponseWithStatus(FBCommandStatusNoError, @{@"value": [NSString stringWithFormat:@"%f seconds", duration], @"version": @"v1.0"});
 }
 
 @end

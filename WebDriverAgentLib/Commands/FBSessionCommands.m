@@ -20,6 +20,9 @@
 #import "XCUIDevice+FBHelpers.h"
 #import "XCUIApplicationProcessDelay.h"
 
+// ADDED BY MO: When lanuch the test app, dismiss system alerts
+#import "FBAlert.h"
+
 static NSString* const USE_COMPACT_RESPONSES = @"shouldUseCompactResponses";
 static NSString* const ELEMENT_RESPONSE_ATTRIBUTES = @"elementResponseAttributes";
 static NSString* const MJPEG_SERVER_SCREENSHOT_QUALITY = @"mjpegServerScreenshotQuality";
@@ -79,6 +82,13 @@ static NSString* const SNAPSHOT_TIMEOUT = @"snapshotTimeout";
   NSDictionary *requirements = request.arguments[@"desiredCapabilities"];
   NSString *bundleID = requirements[@"bundleId"];
   NSString *appPath = requirements[@"app"];
+  
+  // ADDED BY MO: When lanuch the test app, dismiss system alerts
+  // TODO: requried solution to dismiss system alerts
+  //       unable to found solution
+  [[self class] fb_alertDismiss];
+  [[self class] fb_alertDismiss];
+  
   if (!bundleID) {
     return FBResponseWithErrorFormat(@"'bundleId' desired capability not provided");
   }
@@ -292,6 +302,28 @@ static NSString* const SNAPSHOT_TIMEOUT = @"snapshotTimeout";
     @"browserName": application.label ?: [NSNull null],
     @"CFBundleIdentifier": application.bundleID ?: [NSNull null],
   };
+}
+
+// ADDED BY MO: When lanuch the test app, dismiss system alerts
++ (BOOL)fb_alertDismiss
+{
+  @try {
+    FBApplication *application = [FBApplication fb_activeApplication];
+    FBAlert *alert = [FBAlert alertWithApplication:application];
+    NSError *error;
+    
+    if (!alert.isPresent) {
+      return YES;
+    }
+    if (![alert dismissWithError:&error]) {
+      NSLog(@"fb_alertDismissError: %@", error);
+      return NO;
+    }
+    return YES;
+  } @catch (NSException *exception) {
+    NSLog(@"%@", exception.reason);
+  }
+  return NO;
 }
 
 @end

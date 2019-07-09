@@ -56,6 +56,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable XCUIElement *)fb_focusedElement;
 #endif
 
+//ADDED BY MO: XCElementSnapshot#recursiveDescriptionIncludingAccessibilityElement
+- (NSString *)fb_descriptionRepresentation_v2;
+
 @end
 
 NS_ASSUME_NONNULL_END

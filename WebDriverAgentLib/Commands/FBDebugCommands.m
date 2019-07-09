@@ -38,6 +38,9 @@ static NSString *const SOURCE_FORMAT_XML = @"xml";
 static NSString *const SOURCE_FORMAT_JSON = @"json";
 static NSString *const SOURCE_FORMAT_DESCRIPTION = @"description";
 
+// ADDED BY MO: extends page_source
+static NSString *const SOURCE_FORMAT_DESCRIPTION_V2 = @"accessibilityDescription";
+
 + (id<FBResponsePayload>)handleGetSourceCommand:(FBRouteRequest *)request
 {
   FBApplication *application = request.session.activeApplication ?: [FBApplication fb_activeApplication];
@@ -49,6 +52,9 @@ static NSString *const SOURCE_FORMAT_DESCRIPTION = @"description";
     result = application.fb_tree;
   } else if ([sourceType caseInsensitiveCompare:SOURCE_FORMAT_DESCRIPTION] == NSOrderedSame) {
     result = application.fb_descriptionRepresentation;
+  // ADDED BY MO: extends page_source
+  } else  if ([sourceType caseInsensitiveCompare:SOURCE_FORMAT_DESCRIPTION_V2] == NSOrderedSame) {
+      result = application.fb_descriptionRepresentation_v2;
   } else {
     return FBResponseWithStatus(
       FBCommandStatusUnsupported,
