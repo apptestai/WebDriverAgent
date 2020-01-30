@@ -9,6 +9,7 @@
 
 #import <Foundation/Foundation.h>
 
+#import "AXSettings.h"
 #import "UIKeyboardImpl.h"
 #import "TIPreferencesController.h"
 
@@ -136,6 +137,78 @@ NS_ASSUME_NONNULL_BEGIN
  */
 + (void)setSnapshotTimeout:(NSTimeInterval)timeout;
 + (NSTimeInterval)snapshotTimeout;
+
+/**
+ Sets maximum depth for traversing elements tree from parents to children while requesting XCElementSnapshot.
+ Used to set maxDepth value in a dictionary provided by XCAXClient_iOS's method defaultParams.
+ The original XCAXClient_iOS maxDepth value is set to INT_MAX, which is too big for some queries
+ (for example: searching elements inside a WebView).
+ Reasonable values are from 15 to 100 (larger numbers make queries slower).
+
+ @param maxDepth The number of maximum depth for traversing elements tree
+ */
++ (void)setSnapshotMaxDepth:(int)maxDepth;
+
+/**
+  @return The number of maximum depth for traversing elements tree
+ */
++ (int)snapshotMaxDepth;
+
+/**
+ Returns parameters for traversing elements tree from parents to children while requesting XCElementSnapshot.
+
+ @return dictionary with parameters for element's snapshot request
+*/
++ (NSDictionary *)snapshotRequestParameters;
+
+/**
+ * Whether to use fast search result matching while searching for elements.
+ * By default this is disabled due to https://github.com/appium/appium/issues/10101
+ * but it still makes sense to enable it for views containing large counts of elements
+ *
+ * @param enabled Either YES or NO
+ */
++ (void)setUseFirstMatch:(BOOL)enabled;
++ (BOOL)useFirstMatch;
+
+/**
+ * Modify reduce motion configuration in accessibility.
+ * It works only for Simulator since Real device has security model which allows chnaging preferences
+ * only from settings app.
+ *
+ * @param isEnabled Turn the configuration on if the value is YES
+ */
++ (void)setReduceMotionEnabled:(BOOL)isEnabled;
++ (BOOL)reduceMotionEnabled;
+
+/**
+ Enforces the page hierarchy to include non modal elements,
+ like Contacts. By default such elements are not present there.
+ See https://github.com/appium/appium/issues/13227
+
+ @param isEnabled Set to YES in order to enable non modal elements inclusion.
+ Setting this value to YES will have no effect if the current iOS SDK does not support such feature.
+ */
++ (void)setIncludeNonModalElements:(BOOL)isEnabled;
++ (BOOL)includeNonModalElements;
+
+/**
+ Sets custom class chain locators for accept/dismiss alert buttons location.
+ This might be useful if the default buttons detection algorithm fails to determine alert buttons properly
+ when defaultAlertAction is set.
+
+ @param classChainSelector Valid class chain locator, which determines accept/reject button
+ on the alert. The search root is the alert element itself.
+ Setting this value to nil or an empty string (the default
+ value) will enforce WDA to apply the default algorithm for alert buttons location.
+ If an invalid/non-parseable locator is set then the lookup will fallback to the default algorithm and print a
+ warning into the log.
+ Example: ** /XCUIElementTypeButton[`label CONTAINS[c] 'accept'`]
+ */
++ (void)setAcceptAlertButtonSelector:(NSString *)classChainSelector;
++ (NSString *)acceptAlertButtonSelector;
++ (void)setDismissAlertButtonSelector:(NSString *)classChainSelector;
++ (NSString *)dismissAlertButtonSelector;
 
 @end
 

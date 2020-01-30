@@ -10,6 +10,7 @@
 #import <XCTest/XCTest.h>
 
 @class XCElementSnapshot;
+@class XCAccessibilityElement;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -40,6 +41,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable NSString *)fb_xmlRepresentation;
 
 /**
+ Return application elements tree in form of xml string exluding the given attribute names.
+
+ @param excludedAttributes the list of XML attribute names to be excluded from the resulting document.
+ Invalid attribute names are silently skipped
+ @returns The XML representation of the current element as a string
+ */
+- (NSString *)fb_xmlRepresentationWithoutAttributes:(NSArray<NSString *> *)excludedAttributes;
+
+/**
  Return application elements tree in form of internal XCTest debugDescription string
  */
 - (NSString *)fb_descriptionRepresentation;
@@ -55,6 +65,30 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (nullable XCUIElement *)fb_focusedElement;
 #endif
+
+/**
+ Waits until the current on-screen accessbility element belongs to the current application instance
+ @param timeout The maximum time to wait for the element to appear
+ @returns Either YES or NO
+ */
+- (BOOL)fb_waitForAppElement:(NSTimeInterval)timeout;
+
+/**
+ Retrieves the information about the applications the given accessiblity elements
+ belong to
+
+ @param axElements the list of accessibility elements
+ @returns The list of dictionaries. Each dictionary contains `bundleId` and `pid` items
+ */
++ (NSArray<NSDictionary<NSString *, id> *> *)fb_appsInfoWithAxElements:(NSArray<XCAccessibilityElement *> *)axElements;
+
+/**
+ Retrieves the information about the currently active apps
+
+ @returns The list of dictionaries. Each dictionary contains `bundleId` and `pid` items.
+ */
++ (NSArray<NSDictionary<NSString *, id> *> *)fb_activeAppsInfo;
+
 
 @end
 

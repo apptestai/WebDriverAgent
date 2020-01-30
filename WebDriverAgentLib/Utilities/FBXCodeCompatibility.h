@@ -45,9 +45,14 @@ extern NSString *const FBApplicationMethodNotSupportedException;
  Nothing will happen if the application is already in foreground.
  This method is only supported since Xcode9.
 
- @throws FBApplicationMethodNotSupportedException if the method is called on Xcode SDK older than 9.
+ @throws FBTimeoutException if the app is still not active after the timeout
  */
 - (void)fb_activate;
+
+/**
+ Terminate the application and wait until it disappears from the list of active apps
+ */
+- (void)fb_terminate;
 
 @end
 
@@ -71,6 +76,27 @@ extern NSString *const FBApplicationMethodNotSupportedException;
  Enforces snapshot resolution of the destination element
  */
 - (void)fb_nativeResolve;
+
+/**
+ Determines whether current iOS SDK supports non modal elements inlusion into snapshots
+
+ @return Either YES or NO
+ */
++ (BOOL)fb_supportsNonModalElementsInclusion;
+
+/**
+ Retrieves element query
+
+ @return Element query property extended with non modal elements depending on the actual configuration
+ */
+- (XCUIElementQuery *)fb_query;
+
+/**
+ Determines whether Xcode 11 snapshots API is supported
+
+ @return Eiter YES or NO
+ */
++ (BOOL)fb_isSdk11SnapshotApiSupported;
 
 @end
 

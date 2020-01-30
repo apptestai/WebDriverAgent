@@ -16,27 +16,52 @@
 #import "XCUIElement+FBTap.h"
 #import "XCUIElement+FBUtilities.h"
 
+
+#define MAX_CLEAR_RETRIES 2
+
+@interface NSString (FBRepeat)
+
+- (NSString *)fb_repeatTimes:(NSUInteger)times;
+
+@end
+
+@implementation NSString (FBRepeat)
+
+- (NSString *)fb_repeatTimes:(NSUInteger)times {
+  return [@"" stringByPaddingToLength:times * self.length
+                           withString:self
+                      startingAtIndex:0];
+}
+
+@end
+
+
 @implementation XCUIElement (FBTyping)
 
 - (BOOL)fb_prepareForTextInputWithError:(NSError **)error
 {
-  BOOL isKeyboardAlreadyVisible = [FBKeyboard waitUntilVisibleForApplication:self.application timeout:-1 error:error];
-  if (isKeyboardAlreadyVisible && self.hasKeyboardFocus) {
+  BOOL wasKeyboardAlreadyVisible = [FBKeyboard waitUntilVisibleForApplication:self.application timeout:-1 error:error];
+  if (wasKeyboardAlreadyVisible && self.hasKeyboardFocus) {
     return YES;
   }
-  
+
+  BOOL isKeyboardVisible = wasKeyboardAlreadyVisible;
   // Sometimes the keyboard is not opened after the first tap, so we need to retry
   for (int tryNum = 0; tryNum < 2; ++tryNum) {
-    if (![self fb_tapWithError:error]) {
-      return NO;
-    }
-    if (isKeyboardAlreadyVisible) {
+    if ([self fb_tapWithError:error] && wasKeyboardAlreadyVisible) {
       return YES;
     }
+    // It might take some time to update the UI
+    [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
     [self fb_waitUntilSnapshotIsStable];
-    if ([FBKeyboard waitUntilVisibleForApplication:self.application timeout:1. error:error]) {
+    isKeyboardVisible = [FBKeyboard waitUntilVisibleForApplication:self.application timeout:-1 error:error];
+    if (isKeyboardVisible && self.hasKeyboardFocus) {
       return YES;
     }
+  }
+  if (nil == error) {
+    NSString *description = [NSString stringWithFormat:@"The element '%@' is not ready for text input (hasKeyboardFocus -> %@, isKeyboardVisible -> %@)", self.description, @(self.hasKeyboardFocus), @(isKeyboardVisible)];
+    return [[[FBErrorBuilder builder] withDescription:description] buildError:error];
   }
   return NO;
 }
@@ -66,7 +91,15 @@
 
 - (BOOL)fb_clearTextWithError:(NSError **)error
 {
-  if (0 == [self.value fb_visualLength]) {
+  id currentValue = self.value;
+  if (nil != currentValue && ![currentValue isKindOfClass:NSString.class]) {
+    return [[[FBErrorBuilder builder]
+               withDescriptionFormat:@"The value of '%@' element is not a string and thus cannot be cleared", self.description]
+              buildError:error];
+  }
+  
+  if (nil == currentValue || 0 == [currentValue fb_visualLength]) {
+    // Short circuit if the content is not present
     return YES;
   }
 
@@ -74,19 +107,37 @@
     return NO;
   }
   
-  NSUInteger preClearTextLength = 0;
-  NSData *encodedSequence = [@"\\u0008\\u007F" dataUsingEncoding:NSASCIIStringEncoding];
-  NSString *backspaceDeleteSequence = [[NSString alloc] initWithData:encodedSequence encoding:NSNonLossyASCIIStringEncoding];
-  while ([self.value fb_visualLength] != preClearTextLength) {
-    NSMutableString *textToType = @"".mutableCopy;
-    preClearTextLength = [self.value fb_visualLength];
-    for (NSUInteger i = 0 ; i < preClearTextLength ; i++) {
-      [textToType appendString:backspaceDeleteSequence];
+  static NSString *backspaceDeleteSequence;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    backspaceDeleteSequence = [[NSString alloc] initWithData:(NSData *)[@"\\u0008\\u007F" dataUsingEncoding:NSASCIIStringEncoding]
+                                                    encoding:NSNonLossyASCIIStringEncoding];
+  });
+  
+  NSUInteger retry = 0;
+  NSString *placeholderValue = self.placeholderValue;
+  NSUInteger preClearTextLength = [currentValue fb_visualLength];
+  do {
+    if (retry >= MAX_CLEAR_RETRIES - 1) {
+      // Last chance retry. Tripple-tap the field to select its content
+      [self tapWithNumberOfTaps:3 numberOfTouches:1];
+      return [FBKeyboard typeText:backspaceDeleteSequence error:error];
     }
-    if (textToType.length > 0 && ![FBKeyboard typeText:textToType error:error]) {
+
+    NSString *textToType = [backspaceDeleteSequence fb_repeatTimes:preClearTextLength];
+    if (![FBKeyboard typeText:textToType error:error]) {
       return NO;
     }
-  }
+
+    currentValue = self.value;
+    if (nil != placeholderValue && [currentValue isEqualToString:placeholderValue]) {
+      // Short circuit if only the placeholder value left
+      return YES;
+    }
+    preClearTextLength = [currentValue fb_visualLength];
+
+    retry++;
+  } while (preClearTextLength > 0);
   return YES;
 }
 

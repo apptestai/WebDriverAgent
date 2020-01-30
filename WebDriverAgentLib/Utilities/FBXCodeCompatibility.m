@@ -9,9 +9,16 @@
 
 #import "FBXCodeCompatibility.h"
 
+#import "FBConfiguration.h"
 #import "FBErrorBuilder.h"
+#import "FBExceptionHandler.h"
 #import "FBLogger.h"
+#import "XCUIApplication+FBHelpers.h"
 #import "XCUIElementQuery.h"
+#import "FBXCTestDaemonsProxy.h"
+#import "XCTestManager_ManagerInterface-Protocol.h"
+
+static const NSTimeInterval APP_STATE_CHANGE_TIMEOUT = 5.0;
 
 static BOOL FBShouldUseOldElementRootSelector = NO;
 static dispatch_once_t onceRootElementToken;
@@ -72,6 +79,17 @@ static dispatch_once_t onceAppWithPIDToken;
 - (void)fb_activate
 {
   [self activate];
+  if (![self waitForState:XCUIApplicationStateRunningForeground timeout:APP_STATE_CHANGE_TIMEOUT / 2] || ![self fb_waitForAppElement:APP_STATE_CHANGE_TIMEOUT / 2]) {
+    [FBLogger logFmt:@"The application '%@' is not running in foreground after %.2f seconds", self.bundleID, APP_STATE_CHANGE_TIMEOUT];
+  }
+}
+
+- (void)fb_terminate
+{
+  [self terminate];
+  if (![self waitForState:XCUIApplicationStateNotRunning timeout:APP_STATE_CHANGE_TIMEOUT]) {
+    [FBLogger logFmt:@"The active application is still '%@' after %.2f seconds timeout", self.bundleID, APP_STATE_CHANGE_TIMEOUT];
+  }
 }
 
 - (NSUInteger)fb_state
@@ -82,28 +100,14 @@ static dispatch_once_t onceAppWithPIDToken;
 @end
 
 
-static BOOL FBShouldUseFirstMatchSelector = NO;
-static dispatch_once_t onceFirstMatchToken;
-
 @implementation XCUIElementQuery (FBCompatibility)
 
 - (XCUIElement *)fb_firstMatch
 {
-  dispatch_once(&onceFirstMatchToken, ^{
-    // Unfortunately, firstMatch property does not work properly if
-    // the lookup is not executed in application context:
-    // https://github.com/appium/appium/issues/10101
-    //    FBShouldUseFirstMatchSelector = [self respondsToSelector:@selector(firstMatch)];
-    FBShouldUseFirstMatchSelector = NO;
-  });
-  if (FBShouldUseFirstMatchSelector) {
-    XCUIElement* result = self.firstMatch;
-    return result.exists ? result : nil;
-  }
-  if (!self.element.exists) {
-    return nil;
-  }
-  return self.allElementsBoundByAccessibilityElement.firstObject;
+  XCUIElement* match = FBConfiguration.useFirstMatch
+    ? self.firstMatch
+    : self.allElementsBoundByAccessibilityElement.firstObject;
+  return [match exists] ? match : nil;
 }
 
 - (XCElementSnapshot *)fb_elementSnapshotForDebugDescription
@@ -138,6 +142,33 @@ static dispatch_once_t onceFirstMatchToken;
     return;
   }
   @throw [[FBErrorBuilder.builder withDescription:@"Cannot resolve elements. Please contact Appium developers"] build];
+}
+
++ (BOOL)fb_supportsNonModalElementsInclusion
+{
+  static dispatch_once_t hasIncludingNonModalElements;
+  static BOOL result;
+  dispatch_once(&hasIncludingNonModalElements, ^{
+    result = [FBApplication.fb_systemApplication.query respondsToSelector:@selector(includingNonModalElements)];
+  });
+  return result;
+}
+
+- (XCUIElementQuery *)fb_query
+{
+  return FBConfiguration.includeNonModalElements && self.class.fb_supportsNonModalElementsInclusion
+    ? self.query.includingNonModalElements
+    : self.query;
+}
+
++ (BOOL)fb_isSdk11SnapshotApiSupported
+{
+  static dispatch_once_t newSnapshotIsSupported;
+  static BOOL result;
+  dispatch_once(&newSnapshotIsSupported, ^{
+    result = [(id)[FBXCTestDaemonsProxy testRunnerProxy] respondsToSelector:@selector(_XCT_requestSnapshotForElement:attributes:parameters:reply:)];
+  });
+  return result;
 }
 
 @end

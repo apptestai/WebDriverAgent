@@ -9,19 +9,18 @@
 
 #import <Foundation/Foundation.h>
 
-#import <WebDriverAgentLib/FBResponsePayload.h>
-
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- Class that represents WebDriverAgent file respond
- */
-@interface FBResponseFilePayload : NSObject <FBResponsePayload>
+ Launches apps without attaching them to an XCUITest or a WDA session, allowing them to remain open
+ when WDA closes.
+*/
+@interface FBUnattachedAppLauncher : NSObject
 
 /**
- Initializer for respond that returns content of file at given 'path'
+ Launch the app with the specified bundle ID. Return YES if successful, NO otherwise.
  */
-- (instancetype)initWithFilePath:(NSString *)path;
++ (BOOL)launchAppWithBundleId:(NSString *)bundleId;
 
 @end
 

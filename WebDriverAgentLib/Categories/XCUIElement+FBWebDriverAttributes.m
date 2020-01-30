@@ -19,6 +19,7 @@
 #import "XCUIElement.h"
 #import "XCUIElement+FBUtilities.h"
 #import "FBElementUtils.h"
+#import "XCTestPrivateSymbols.h"
 
 @implementation XCUIElement (WebDriverAttributesForwarding)
 
@@ -27,15 +28,17 @@
   if (!self.exists) {
     return [XCElementSnapshot new];
   }
-  
-  if ([name isEqualToString:FBStringify(XCUIElement, isWDVisible)]
-             || [name isEqualToString:FBStringify(XCUIElement, isWDAccessible)]
-             || [name isEqualToString:FBStringify(XCUIElement, isWDAccessibilityContainer)]) {
-    // These attrbiutes are special, because we can only retrieve them from
-    // the snapshot if we explicitly ask XCTest to include them into the query while taking it.
-    // That is why fb_snapshotWithAttributes method must be used instead of the default fb_lastSnapshot
-    // call
-    return (self.fb_snapshotWithAttributes ?: self.fb_lastSnapshot) ?: [XCElementSnapshot new];
+
+  // These attrbiutes are special, because we can only retrieve them from
+  // the snapshot if we explicitly ask XCTest to include them into the query while taking it.
+  // That is why fb_snapshotWithAllAttributes method must be used instead of the default fb_lastSnapshot
+  // call
+  if ([name isEqualToString:FBStringify(XCUIElement, isWDVisible)]) {
+    return ([self fb_snapshotWithAttributes:@[FB_XCAXAIsVisibleAttributeName]] ?: self.fb_lastSnapshot) ?: [XCElementSnapshot new];
+  }
+  if ([name isEqualToString:FBStringify(XCUIElement, isWDAccessible)] ||
+      [name isEqualToString:FBStringify(XCUIElement, isWDAccessibilityContainer)]) {
+    return ([self fb_snapshotWithAttributes:@[FB_XCAXAIsElementAttributeName]] ?: self.fb_lastSnapshot) ?: [XCElementSnapshot new];
   }
   
   return self.fb_lastSnapshot ?: [XCElementSnapshot new];
@@ -259,6 +262,15 @@ static NSMutableDictionary<NSNumber *, NSMutableDictionary<NSString *, NSMutable
   };
   
   return [[self fb_cachedValueWithAttributeName:@"isWDEnabled" valueGetter:getter] boolValue];
+}
+
+- (BOOL)isWDSelected
+{
+  id (^getter)(void) = ^id(void) {
+    return @(self.isSelected);
+  };
+
+  return [[self fb_cachedValueWithAttributeName:@"isWDSelected" valueGetter:getter] boolValue];
 }
 
 - (NSDictionary *)wdRect
