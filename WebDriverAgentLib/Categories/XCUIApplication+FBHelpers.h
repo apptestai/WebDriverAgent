@@ -89,6 +89,14 @@ NS_ASSUME_NONNULL_BEGIN
  */
 + (NSArray<NSDictionary<NSString *, id> *> *)fb_activeAppsInfo;
 
+/**
+ ADDED BY MO:  XCElementSnapshot#recursiveDescriptionIncludingAccessibilityElement
+ Return application elements tree in form of xml string (faster than `fb_xmlRepresentation`)
+
+ @returns The XML representation of the current element as a string
+ */
+
+- (NSString *)fb_descriptionRepresentation_v2;
 
 @end
 

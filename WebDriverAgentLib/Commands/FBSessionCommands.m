@@ -25,6 +25,9 @@
 #import "XCUIDevice+FBHelpers.h"
 #import "XCUIApplicationProcessDelay.h"
 
+// ADDED BY MO: When lanuch the test app, dismiss system alerts
+#import "FBAlert.h"
+
 static NSString* const USE_COMPACT_RESPONSES = @"shouldUseCompactResponses";
 static NSString* const ELEMENT_RESPONSE_ATTRIBUTES = @"elementResponseAttributes";
 static NSString* const MJPEG_SERVER_SCREENSHOT_QUALITY = @"mjpegServerScreenshotQuality";
@@ -90,6 +93,17 @@ static NSString* const DISMISS_ALERT_BUTTON_SELECTOR = @"dismissAlertButtonSelec
 
 + (id<FBResponsePayload>)handleCreateSession:(FBRouteRequest *)request
 {
+  @try {
+    // ADDED BY MO: When lanuch the test app, dismiss system alerts
+    // TODO: requried solution to dismiss system alerts
+    //       unable to found solution
+    [[self class] fb_alertDismiss];
+    [[self class] fb_alertDismiss];
+    //END
+  } @catch (NSException *ex) {
+    [FBLogger logFmt:@"Can not dismiss alert: %@", ex.reason];
+  }
+  
   NSDictionary<NSString *, id> *requirements;
   NSError *error;
   if (![request.arguments[@"capabilities"] isKindOfClass:NSDictionary.class]) {
@@ -356,6 +370,28 @@ static NSString* const DISMISS_ALERT_BUTTON_SELECTOR = @"dismissAlertButtonSelec
     @"browserName": application.label ?: [NSNull null],
     @"CFBundleIdentifier": application.bundleID ?: [NSNull null],
   };
+}
+
+// ADDED BY MO: When lanuch the test app, dismiss system alerts
++ (BOOL)fb_alertDismiss
+{
+  @try {
+    FBApplication *application = [FBApplication fb_activeApplication];
+    FBAlert *alert = [FBAlert alertWithApplication:application];
+    NSError *error;
+    
+    if (!alert.isPresent) {
+      return YES;
+    }
+    if (![alert dismissWithError:&error]) {
+      NSLog(@"fb_alertDismissError: %@", error);
+      return NO;
+    }
+    return YES;
+  } @catch (NSException *exception) {
+    NSLog(@"%@", exception.reason);
+  }
+  return NO;
 }
 
 @end

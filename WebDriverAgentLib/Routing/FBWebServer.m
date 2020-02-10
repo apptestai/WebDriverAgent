@@ -195,6 +195,12 @@ static NSString *const FBServerURLEndMarker = @"<-ServerURLHere";
         ];
 
         [FBLogger verboseLog:routeParams.description];
+        
+        //ADDED BY MO: request logging
+        if (!FBConfiguration.verboseLoggingEnabled) {
+          [FBLogger log:routeParams.description];
+        }
+        //END
 
         @try {
           [route mountRequest:routeParams intoResponse:response];
@@ -202,6 +208,12 @@ static NSString *const FBServerURLEndMarker = @"<-ServerURLHere";
         @catch (NSException *exception) {
           [self handleException:exception forResponse:response];
         }
+        
+        //ADDED BY MO: request logging
+        if (!FBConfiguration.verboseLoggingEnabled) {
+          [FBLogger log:[NSString stringWithFormat:@"Response URL %@ | Status %ld", request.url, (long)response.statusCode]];
+        }
+        //END
       }];
     }
   }
