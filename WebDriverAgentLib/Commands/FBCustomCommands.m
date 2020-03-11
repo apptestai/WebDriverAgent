@@ -30,6 +30,9 @@
 #import "XCUIElementQuery.h"
 #import "FBUnattachedAppLauncher.h"
 
+//ADDED BY MO: ipaddress
+#import "FBNetworkUtils.h"
+
 @implementation FBCustomCommands
 
 + (NSArray *)routes
@@ -299,6 +302,8 @@
 #else
     @"isSimulator": @(NO),
 #endif
+    // ADDED BY MO: ip address
+    @"ipaddress": FBNetworkUtils.ipaddress,
   });
 }
 
