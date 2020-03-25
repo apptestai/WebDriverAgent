@@ -259,8 +259,10 @@ static NSRegularExpression *pidRegex = nil;
   NSMutableArray<NSString *> *childrenDescriptions = [NSMutableArray array];
   for (XCUIElement *child in [self childrenMatchingType:XCUIElementTypeAny].allElementsBoundByAccessibilityElement) {
     NSString *desc = child.fb_lastSnapshot.recursiveDescriptionIncludingAccessibilityElement;
-    [self findBundleIDs:bundleIDs inAccessibilityDesc:desc];
-    [childrenDescriptions addObject:desc];
+    if (desc != nil) {
+      [self findBundleIDs:bundleIDs inAccessibilityDesc:desc];
+      [childrenDescriptions addObject:desc];
+    }
   }
   
   // Application Desc

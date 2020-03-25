@@ -40,10 +40,19 @@
 
 - (BOOL)fb_prepareForTextInputWithError:(NSError **)error
 {
-  BOOL wasKeyboardAlreadyVisible = [FBKeyboard waitUntilVisibleForApplication:self.application timeout:-1 error:error];
-  if (wasKeyboardAlreadyVisible && self.hasKeyboardFocus) {
-    return YES;
+  //MODIFIED BY MO: for solving setValue issue(>= iOS 13.0) - In the "Sign In with Apple ID" popup of App Store, the password input field is not processed with "An element command could not be completed because the element is in an invalid state (e.g. attempting to click a disabled element)" error.
+//  BOOL wasKeyboardAlreadyVisible = [FBKeyboard waitUntilVisibleForApplication:self.application timeout:-1 error:error];
+//  if (wasKeyboardAlreadyVisible && self.hasKeyboardFocus) {
+//    return YES;
+//  }
+  BOOL wasKeyboardAlreadyVisible = YES;
+  if (![FBConfiguration ignoreKeyboardvisibilityForInput]) {
+    wasKeyboardAlreadyVisible = [FBKeyboard waitUntilVisibleForApplication:self.application timeout:-1 error:error];
+    if (wasKeyboardAlreadyVisible && self.hasKeyboardFocus) {
+      return YES;
+    }
   }
+  ////////////////////////
 
   BOOL isKeyboardVisible = wasKeyboardAlreadyVisible;
   // Sometimes the keyboard is not opened after the first tap, so we need to retry

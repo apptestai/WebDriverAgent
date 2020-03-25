@@ -45,6 +45,9 @@ static BOOL FBIncludeNonModalElements = NO;
 static NSString *FBAcceptAlertButtonSelector = @"";
 static NSString *FBDismissAlertButtonSelector = @"";
 
+//ADDED BY MO: for solving setValue issue(>= iOS 13.0) - In the "Sign In with Apple ID" popup of App Store, the password input field is not processed with "An element command could not be completed because the element is in an invalid state (e.g. attempting to click a disabled element)" error.
+static BOOL FBIgnoreKeyboardvisibilityForInput = NO;
+///////
 
 @implementation FBConfiguration
 
@@ -315,6 +318,19 @@ static NSString *FBDismissAlertButtonSelector = @"";
 {
   return FBDismissAlertButtonSelector;
 }
+
+//ADDED BY MO: for solving setValue issue(>= iOS 13.0) - In the "Sign In with Apple ID" popup of App Store, the password input field is not processed with "An element command could not be completed because the element is in an invalid state (e.g. attempting to click a disabled element)" error.
++ (void)setIgnoreKeyboardvisibilityForInput:(BOOL)isEnabled
+{
+  FBIgnoreKeyboardvisibilityForInput = isEnabled;
+}
+
++ (BOOL)ignoreKeyboardvisibilityForInput
+{
+  return FBIgnoreKeyboardvisibilityForInput;
+}
+/////////
+
 
 #pragma mark Private
 

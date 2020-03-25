@@ -187,6 +187,11 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)setDismissAlertButtonSelector:(NSString *)classChainSelector;
 + (NSString *)dismissAlertButtonSelector;
 
+//ADDED BY MO: for solving setValue issue(>= iOS 13.0) - In the "Sign In with Apple ID" popup of App Store, the password input field is not processed with "An element command could not be completed because the element is in an invalid state (e.g. attempting to click a disabled element)" error.
++ (void)setIgnoreKeyboardvisibilityForInput:(BOOL)isEnabled;
++ (BOOL)ignoreKeyboardvisibilityForInput;
+/////////
+
 @end
 
 NS_ASSUME_NONNULL_END
