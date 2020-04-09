@@ -8,6 +8,7 @@
  */
 
 #import <WebDriverAgentLib/WebDriverAgentLib.h>
+#import "XCPointerEvent.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -62,6 +63,13 @@ extern NSString *const FBApplicationMethodNotSupportedException;
 @property(nullable, readonly) XCUIElement *fb_firstMatch;
 
 /**
+ Since Xcode11 XCTest got a feature that caches intermediate query snapshots
+
+ @returns The cached snapshot or nil if the feature is either not available or there's no cached snapshot
+ */
+- (nullable XCElementSnapshot *)fb_cachedSnapshot;
+
+/**
  Retrieves the snapshot for the given element
 
  @returns The resolved snapshot
@@ -69,6 +77,14 @@ extern NSString *const FBApplicationMethodNotSupportedException;
 - (XCElementSnapshot *)fb_elementSnapshotForDebugDescription;
 
 @end
+
+
+@interface XCPointerEvent (FBCompatibility)
+
+- (BOOL)fb_areKeyEventsSupported;
+
+@end
+
 
 @interface XCUIElement (FBCompatibility)
 

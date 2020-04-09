@@ -102,6 +102,24 @@ static dispatch_once_t onceAppWithPIDToken;
 
 @implementation XCUIElementQuery (FBCompatibility)
 
+- (XCElementSnapshot *)fb_cachedSnapshot
+{
+  static dispatch_once_t onceToken;
+  static BOOL isUniqueMatchingSnapshotAvailable;
+  dispatch_once(&onceToken, ^{
+    isUniqueMatchingSnapshotAvailable = [self respondsToSelector:@selector(uniqueMatchingSnapshotWithError:)];
+  });
+  if (!isUniqueMatchingSnapshotAvailable) {
+    return nil;
+  }
+  NSError *error;
+  XCElementSnapshot *result = [self uniqueMatchingSnapshotWithError:&error];
+  if (nil == result && nil != error) {
+    [FBLogger logFmt:@"%@", error.description];
+  }
+  return result;
+}
+
 - (XCUIElement *)fb_firstMatch
 {
   XCUIElement* match = FBConfiguration.useFirstMatch
@@ -169,6 +187,20 @@ static dispatch_once_t onceAppWithPIDToken;
     result = [(id)[FBXCTestDaemonsProxy testRunnerProxy] respondsToSelector:@selector(_XCT_requestSnapshotForElement:attributes:parameters:reply:)];
   });
   return result;
+}
+
+@end
+
+@implementation XCPointerEvent (FBXcodeCompatibility)
+
++ (BOOL)fb_areKeyEventsSupported
+{
+  static BOOL isKbInputSupported = NO;
+  static dispatch_once_t onceKbInputSupported;
+  dispatch_once(&onceKbInputSupported, ^{
+    isKbInputSupported = [XCPointerEvent.class respondsToSelector:@selector(keyboardEventForKeyCode:keyPhase:modifierFlags:offset:)];
+  });
+  return isKbInputSupported;
 }
 
 @end

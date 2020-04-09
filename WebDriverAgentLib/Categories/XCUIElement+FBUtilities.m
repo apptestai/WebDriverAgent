@@ -11,7 +11,6 @@
 
 #import <objc/runtime.h>
 
-#import "FBAlert.h"
 #import "FBConfiguration.h"
 #import "FBLogger.h"
 #import "FBImageUtils.h"
@@ -43,36 +42,21 @@ static const NSTimeInterval FB_ANIMATION_TIMEOUT = 5.0;
   [[[FBRunLoopSpinner new]
     timeout:10.]
    spinUntilTrue:^BOOL{
-    const BOOL isSameFrame = FBRectFuzzyEqualToRect(self.frame, frame, FBDefaultFrameFuzzyThreshold);
-    frame = self.frame;
+    CGRect newFrame = self.frame;
+    const BOOL isSameFrame = FBRectFuzzyEqualToRect(newFrame, frame, FBDefaultFrameFuzzyThreshold);
+    frame = newFrame;
     return isSameFrame;
   }];
-}
-
-- (BOOL)fb_isObstructedByAlert
-{
-  return [[FBAlert alertWithApplication:self.application].alertElement fb_obstructsElement:self];
-}
-
-- (BOOL)fb_obstructsElement:(XCUIElement *)element
-{
-  if (!self.exists) {
-    return NO;
-  }
-  XCElementSnapshot *snapshot = self.fb_lastSnapshot;
-  XCElementSnapshot *elementSnapshot = element.fb_lastSnapshot;
-  if ([snapshot _isAncestorOfElement:elementSnapshot]) {
-    return NO;
-  }
-  if ([snapshot _matchesElement:elementSnapshot]) {
-    return NO;
-  }
-  return YES;
 }
 
 - (XCElementSnapshot *)fb_lastSnapshot
 {
   return [self.query fb_elementSnapshotForDebugDescription];
+}
+
+- (XCElementSnapshot *)fb_cachedSnapshot
+{
+  return [self.query fb_cachedSnapshot];
 }
 
 - (nullable XCElementSnapshot *)fb_snapshotWithAllAttributes {
@@ -101,6 +85,7 @@ static const NSTimeInterval FB_ANIMATION_TIMEOUT = 5.0;
                               withHandler:^(int res) {
     [self fb_requestSnapshot:axElement
            forAttributeNames:[NSSet setWithArray:attributeNames]
+                       proxy:proxy
                        reply:^(XCElementSnapshot *snapshot, NSError *error) {
       if (nil == error) {
         snapshotWithAttributes = snapshot;
@@ -122,10 +107,10 @@ static const NSTimeInterval FB_ANIMATION_TIMEOUT = 5.0;
 
 - (void)fb_requestSnapshot:(XCAccessibilityElement *)accessibilityElement
          forAttributeNames:(NSSet<NSString *> *)attributeNames
+                     proxy:(id<XCTestManager_ManagerInterface>)proxy
                      reply:(void (^)(XCElementSnapshot *, NSError *))block
 {
   NSArray *axAttributes = FBCreateAXAttributes(attributeNames);
-  id<XCTestManager_ManagerInterface> proxy = [FBXCTestDaemonsProxy testRunnerProxy];
   if (XCUIElement.fb_isSdk11SnapshotApiSupported) {
     // XCode 11 has a new snapshot api and the old one will be deprecated soon
     [proxy _XCT_requestSnapshotForElement:accessibilityElement

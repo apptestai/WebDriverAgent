@@ -47,6 +47,9 @@ static NSString *FBDismissAlertButtonSelector = @"";
 static NSString *FBSnapshotMaxDepthKey = @"maxDepth";
 static NSMutableDictionary *FBSnapshotRequestParameters;
 
+#if !TARGET_OS_TV
+static UIInterfaceOrientation FBScreenshotOrientation = UIInterfaceOrientationUnknown;
+#endif
 
 @implementation FBConfiguration
 
@@ -258,7 +261,7 @@ static NSMutableDictionary *FBSnapshotRequestParameters;
   dlclose(handle);
 }
 
-+ (BOOL)keyboardAutocorrection
++ (FBConfigurationKeyboardPreference)keyboardAutocorrection
 {
   return [self keyboardsPreference:FBKeyboardAutocorrectionKey];
 }
@@ -268,7 +271,7 @@ static NSMutableDictionary *FBSnapshotRequestParameters;
   [self configureKeyboardsPreference:isEnabled forPreferenceKey:FBKeyboardAutocorrectionKey];
 }
 
-+ (BOOL)keyboardPrediction
++ (FBConfigurationKeyboardPreference)keyboardPrediction
 {
   return [self keyboardsPreference:FBKeyboardPredictionKey];
 }
@@ -343,16 +346,76 @@ static NSMutableDictionary *FBSnapshotRequestParameters;
   return FBDismissAlertButtonSelector;
 }
 
+#if !TARGET_OS_TV
++ (BOOL)setScreenshotOrientation:(NSString *)orientation error:(NSError **)error
+{
+  // Only UIInterfaceOrientationUnknown is over iOS 8. Others are over iOS 2.
+  // https://developer.apple.com/documentation/uikit/uiinterfaceorientation/uiinterfaceorientationunknown
+  if ([orientation.lowercaseString isEqualToString:@"portrait"]) {
+    FBScreenshotOrientation = UIInterfaceOrientationPortrait;
+  } else if ([orientation.lowercaseString isEqualToString:@"portraitupsidedown"]) {
+    FBScreenshotOrientation = UIInterfaceOrientationPortraitUpsideDown;
+  } else if ([orientation.lowercaseString isEqualToString:@"landscaperight"]) {
+    FBScreenshotOrientation = UIInterfaceOrientationLandscapeRight;
+  } else if ([orientation.lowercaseString isEqualToString:@"landscapeleft"]) {
+    FBScreenshotOrientation = UIInterfaceOrientationLandscapeLeft;
+  } else if ([orientation.lowercaseString isEqualToString:@"auto"]) {
+    FBScreenshotOrientation = UIInterfaceOrientationUnknown;
+  } else {
+    return [[FBErrorBuilder.builder withDescriptionFormat:
+             @"The orientation value '%@' is not known. Only the following orientation values are supported: " \
+             "'auto', 'portrate', 'portraitUpsideDown', 'landscapeRight' and 'landscapeLeft'", orientation]
+            buildError:error];
+  }
+  return YES;
+}
+
++ (NSInteger)screenshotOrientation
+{
+  return FBScreenshotOrientation;
+}
+
++ (NSString *)humanReadableScreenshotOrientation
+{
+  switch (FBScreenshotOrientation) {
+    case UIInterfaceOrientationPortrait:
+      return @"portrait";
+    case UIInterfaceOrientationPortraitUpsideDown:
+      return @"portraitUpsideDown";
+    case UIInterfaceOrientationLandscapeRight:
+      return @"landscapeRight";
+    case UIInterfaceOrientationLandscapeLeft:
+      return @"landscapeLeft";
+    case UIInterfaceOrientationUnknown:
+      return @"auto";
+  }
+}
+#endif
+
 #pragma mark Private
 
-+ (BOOL)keyboardsPreference:(nonnull NSString *)key
++ (FBConfigurationKeyboardPreference)keyboardsPreference:(nonnull NSString *)key
 {
   Class controllerClass = NSClassFromString(controllerClassName);
   TIPreferencesController *controller = [controllerClass sharedPreferencesController];
   if ([key isEqualToString:FBKeyboardAutocorrectionKey]) {
-    return [controller boolForPreferenceKey:FBKeyboardAutocorrectionKey];
+    if ([controller respondsToSelector:@selector(boolForPreferenceKey:)]) {
+      return [controller boolForPreferenceKey:FBKeyboardAutocorrectionKey]
+        ? FBConfigurationKeyboardPreferenceEnabled
+        : FBConfigurationKeyboardPreferenceDisabled;
+    } else {
+      [FBLogger log:@"Updating keyboard autocorrection preference is not supported"];
+      return FBConfigurationKeyboardPreferenceNotSupported;
+    }
   } else if ([key isEqualToString:FBKeyboardPredictionKey]) {
-    return [controller boolForPreferenceKey:FBKeyboardPredictionKey];
+    if ([controller respondsToSelector:@selector(boolForPreferenceKey:)]) {
+      return [controller boolForPreferenceKey:FBKeyboardPredictionKey]
+        ? FBConfigurationKeyboardPreferenceEnabled
+        : FBConfigurationKeyboardPreferenceDisabled;
+    } else {
+      [FBLogger log:@"Updating keyboard prediction preference is not supported"];
+      return FBConfigurationKeyboardPreferenceNotSupported;
+    }
   }
   @throw [[FBErrorBuilder.builder withDescriptionFormat:@"No available keyboardsPreferenceKey: '%@'", key] build];
 }

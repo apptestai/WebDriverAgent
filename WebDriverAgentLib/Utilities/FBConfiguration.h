@@ -114,13 +114,23 @@ NS_ASSUME_NONNULL_BEGIN
  */
 + (void)configureDefaultKeyboardPreferences;
 
+
+/**
+Defines keyboard preference enabled status
+*/
+typedef NS_ENUM(NSInteger, FBConfigurationKeyboardPreference) {
+    FBConfigurationKeyboardPreferenceDisabled = 0,
+    FBConfigurationKeyboardPreferenceEnabled = 1,
+    FBConfigurationKeyboardPreferenceNotSupported = 2,
+};
+
 /**
  * Modify keyboard configuration of 'auto-correction'.
  *
  * @param isEnabled Turn the configuration on if the value is YES
  */
 + (void)setKeyboardAutocorrection:(BOOL)isEnabled;
-+ (BOOL)keyboardAutocorrection;
++ (FBConfigurationKeyboardPreference)keyboardAutocorrection;
 
 /**
  * Modify keyboard configuration of 'predictive'
@@ -128,7 +138,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param isEnabled Turn the configuration on if the value is YES
  */
 + (void)setKeyboardPrediction:(BOOL)isEnabled;
-+ (BOOL)keyboardPrediction;
++ (FBConfigurationKeyboardPreference)keyboardPrediction;
 
 /**
  * The maximum time to wait until accessibility snapshot is taken
@@ -209,6 +219,35 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)acceptAlertButtonSelector;
 + (void)setDismissAlertButtonSelector:(NSString *)classChainSelector;
 + (NSString *)dismissAlertButtonSelector;
+
+#if !TARGET_OS_TV
+/**
+ Set the screenshot orientation for iOS
+
+ It helps to fix the screenshot orientation when the device under test's orientation changes.
+ For example, when a device changes to the landscape, the screenshot orientation could be wrong.
+ Then, this setting can force change the screenshot orientation.
+ Xcode versions, OS versions or device models and simulator or real device could influence it.
+
+ @param orientation Set the orientation to adjust the screenshot.
+ Case insensitive "portrait", "portraitUpsideDown", "landscapeRight" and "landscapeLeft"  are available
+ to force the coodinate adjust. Other words are handled as "auto", which handles
+ the adjustment automatically. Defaults to "auto".
+ @param error If no availale orientation strategy was given, it returns an NSError object that describes the problem.
+ */
++ (BOOL)setScreenshotOrientation:(NSString *)orientation error:(NSError **)error;
+
+/**
+@return The value of UIInterfaceOrientation
+*/
++ (NSInteger)screenshotOrientation;
+
+/**
+@return The orientation as String for human read
+*/
++ (NSString *)humanReadableScreenshotOrientation;
+
+#endif
 
 @end
 

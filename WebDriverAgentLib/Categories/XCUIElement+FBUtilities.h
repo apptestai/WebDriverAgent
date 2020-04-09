@@ -21,25 +21,21 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)fb_waitUntilFrameIsStable;
 
 /**
- Checks if receiver is obstructed by alert
- */
-- (BOOL)fb_isObstructedByAlert;
-
-/**
- Checks if receiver obstructs given element
-
- @param element tested element
- @return YES if receiver obstructs 'element', otherwise NO
- */
-- (BOOL)fb_obstructsElement:(XCUIElement *)element;
-
-/**
  Gets the most recent snapshot of the current element. The element will be
  automatically resolved if the snapshot is not available yet
 
  @return The recent snapshot of the element
  */
 - (XCElementSnapshot *)fb_lastSnapshot;
+
+/**
+ Gets the cached snapshot of the current element. nil
+ is returned if either no cached element snapshot could be retrived
+ or if the feature is not supported.
+
+@return The cached snapshot of the element
+*/
+- (nullable XCElementSnapshot *)fb_cachedSnapshot;
 
 /**
  Gets the most recent snapshot of the current element and already resolves the accessibility attributes
