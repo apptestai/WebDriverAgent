@@ -51,6 +51,10 @@ static NSMutableDictionary *FBSnapshotRequestParameters;
 static UIInterfaceOrientation FBScreenshotOrientation = UIInterfaceOrientationUnknown;
 #endif
 
+//ADDED BY MO: for solving setValue issue(>= iOS 13.0) - In the "Sign In with Apple ID" popup of App Store, the password input field is not processed with "An element command could not be completed because the element is in an invalid state (e.g. attempting to click a disabled element)" error.
+static BOOL FBIgnoreKeyboardvisibilityForInput = NO;
+//END
+
 @implementation FBConfiguration
 
 + (void)initialize
@@ -391,6 +395,18 @@ static UIInterfaceOrientation FBScreenshotOrientation = UIInterfaceOrientationUn
   }
 }
 #endif
+
+//ADDED BY MO: for solving setValue issue(>= iOS 13.0) - In the "Sign In with Apple ID" popup of App Store, the password input field is not processed with "An element command could not be completed because the element is in an invalid state (e.g. attempting to click a disabled element)" error.
++ (void)setIgnoreKeyboardvisibilityForInput:(BOOL)isEnabled
+{
+  FBIgnoreKeyboardvisibilityForInput = isEnabled;
+}
+
++ (BOOL)ignoreKeyboardvisibilityForInput
+{
+  return FBIgnoreKeyboardvisibilityForInput;
+}
+//END
 
 #pragma mark Private
 

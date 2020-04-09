@@ -25,6 +25,10 @@
 #import "XCUIDevice+FBHelpers.h"
 #import "XCUIApplicationProcessDelay.h"
 
+// ADDED BY MO: When lanuch the test app, dismiss system alerts
+#import "FBAlert.h"
+//END
+
 static NSString* const USE_COMPACT_RESPONSES = @"shouldUseCompactResponses";
 static NSString* const ELEMENT_RESPONSE_ATTRIBUTES = @"elementResponseAttributes";
 static NSString* const MJPEG_SERVER_SCREENSHOT_QUALITY = @"mjpegServerScreenshotQuality";
@@ -45,6 +49,9 @@ static NSString* const ACCEPT_ALERT_BUTTON_SELECTOR = @"acceptAlertButtonSelecto
 static NSString* const DISMISS_ALERT_BUTTON_SELECTOR = @"dismissAlertButtonSelector";
 static NSString* const SCREENSHOT_ORIENTATION = @"screenshotOrientation";
 
+//ADDED BY MO: for solving setValue issue(>= iOS 13.0) - In the "Sign In with Apple ID" popup of App Store, the password input field is not processed with "An element command could not be completed because the element is in an invalid state (e.g. attempting to click a disabled element)" error.
+static NSString* const IGNORE_KEYBOARD_VISIBILITY_FOR_INPUT = @"ignoreKeyboardVisibilityForInput";
+//END
 
 @implementation FBSessionCommands
 
@@ -92,6 +99,18 @@ static NSString* const SCREENSHOT_ORIENTATION = @"screenshotOrientation";
 
 + (id<FBResponsePayload>)handleCreateSession:(FBRouteRequest *)request
 {
+  // ADDED BY MO: When lanuch the test app, dismiss system alerts
+  // TODO: requried solution to dismiss system alerts
+  //       unable to found solution
+  @try {
+    [[self class] fb_alertDismiss];
+    [[self class] fb_alertDismiss];
+    //END
+  } @catch (NSException *ex) {
+    [FBLogger logFmt:@"Can not dismiss alert: %@", ex.reason];
+  }
+  //END
+  
   NSDictionary<NSString *, id> *requirements;
   NSError *error;
   if (![request.arguments[@"capabilities"] isKindOfClass:NSDictionary.class]) {
@@ -262,6 +281,9 @@ static NSString* const SCREENSHOT_ORIENTATION = @"screenshotOrientation";
 #if !TARGET_OS_TV
       SCREENSHOT_ORIENTATION: [FBConfiguration humanReadableScreenshotOrientation],
 #endif
+      //ADDED BY MO: for solving setValue issue(>= iOS 13.0) - In the "Sign In with Apple ID" popup of App Store, the password input field is not processed with "An element command could not be completed because the element is in an invalid state (e.g. attempting to click a disabled element)" error.
+      IGNORE_KEYBOARD_VISIBILITY_FOR_INPUT: @([FBConfiguration ignoreKeyboardvisibilityForInput]),
+      //END
     }
   );
 }
@@ -339,7 +361,12 @@ static NSString* const SCREENSHOT_ORIENTATION = @"screenshotOrientation";
                                              error:&error]) {
       return FBResponseWithStatus([FBCommandStatus invalidArgumentErrorWithMessage:error.description traceback:nil]);
     }
-
+    
+    //ADDED BY MO: for solving setValue issue(>= iOS 13.0) - In the "Sign In with Apple ID" popup of App Store, the password input field is not processed with "An element command could not be completed because the element is in an invalid state (e.g. attempting to click a disabled element)" error.
+    if (nil != [settings objectForKey:IGNORE_KEYBOARD_VISIBILITY_FOR_INPUT]) {
+      [FBConfiguration setIgnoreKeyboardvisibilityForInput:[[settings objectForKey:IGNORE_KEYBOARD_VISIBILITY_FOR_INPUT] boolValue]];
+    }
+    //END
 
   }
 #endif
@@ -378,5 +405,28 @@ static NSString* const SCREENSHOT_ORIENTATION = @"screenshotOrientation";
     @"CFBundleIdentifier": application.bundleID ?: [NSNull null],
   };
 }
+
+// ADDED BY MO: When lanuch the test app, dismiss system alerts
++ (BOOL)fb_alertDismiss
+{
+  @try {
+    FBApplication *application = [FBApplication fb_activeApplication];
+    FBAlert *alert = [FBAlert alertWithApplication:application];
+    NSError *error;
+    
+    if (!alert.isPresent) {
+      return YES;
+    }
+    if (![alert dismissWithError:&error]) {
+      NSLog(@"fb_alertDismissError: %@", error);
+      return NO;
+    }
+    return YES;
+  } @catch (NSException *exception) {
+    NSLog(@"%@", exception.reason);
+  }
+  return NO;
+}
+//END
 
 @end
