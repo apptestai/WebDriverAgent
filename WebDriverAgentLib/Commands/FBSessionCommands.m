@@ -53,6 +53,10 @@ static NSString* const SCREENSHOT_ORIENTATION = @"screenshotOrientation";
 static NSString* const IGNORE_KEYBOARD_VISIBILITY_FOR_INPUT = @"ignoreKeyboardVisibilityForInput";
 //END
 
+//ADDED BY MO:for solving performance of source api. The table widget have a lot of cells that are outside of the device screen.
+static NSString* const SNAPSHOT_MAX_CHILDREN = @"snapshotMaxChildren";
+//END
+
 @implementation FBSessionCommands
 
 #pragma mark - <FBCommandHandler>
@@ -281,6 +285,9 @@ static NSString* const IGNORE_KEYBOARD_VISIBILITY_FOR_INPUT = @"ignoreKeyboardVi
       //ADDED BY MO: for solving setValue issue(>= iOS 13.0) - In the "Sign In with Apple ID" popup of App Store, the password input field is not processed with "An element command could not be completed because the element is in an invalid state (e.g. attempting to click a disabled element)" error.
       IGNORE_KEYBOARD_VISIBILITY_FOR_INPUT: @([FBConfiguration ignoreKeyboardVisibilityForInput]),
       //END
+      //ADDED BY MO:for solving performance of source api. The table widget have a lot of cells that are outside of the device screen.
+      SNAPSHOT_MAX_CHILDREN: @([FBConfiguration snapshotMaxChildren]),
+      //END
 #if !TARGET_OS_TV
       SCREENSHOT_ORIENTATION: [FBConfiguration humanReadableScreenshotOrientation],
 #endif
@@ -357,6 +364,12 @@ static NSString* const IGNORE_KEYBOARD_VISIBILITY_FOR_INPUT = @"ignoreKeyboardVi
   //ADDED BY MO: for solving setValue issue(>= iOS 13.0) - In the "Sign In with Apple ID" popup of App Store, the password input field is not processed with "An element command could not be completed because the element is in an invalid state (e.g. attempting to click a disabled element)" error.
   if (nil != [settings objectForKey:IGNORE_KEYBOARD_VISIBILITY_FOR_INPUT]) {
     [FBConfiguration setIgnoreKeyboardvisibilityForInput:[[settings objectForKey:IGNORE_KEYBOARD_VISIBILITY_FOR_INPUT] boolValue]];
+  }
+  //END
+  
+  //ADDED BY MO:for solving performance of source api. The table widget have a lot of cells that are outside of the device screen.
+  if (nil != [settings objectForKey:SNAPSHOT_MAX_CHILDREN]) {
+    [FBConfiguration setSnapshotMaxChildren:[[settings objectForKey:SNAPSHOT_MAX_CHILDREN] intValue]];
   }
   //END
 

@@ -215,6 +215,21 @@ NS_ASSUME_NONNULL_BEGIN
 + (BOOL)ignoreKeyboardVisibilityForInput;
 //END
 
+//ADDED BY MO:for solving performance of source api. The table widget have a lot of cells that are outside of the device screen.
+/**
+ Sets maximum children for traversing elements tree from parents to children while requesting XCElementSnapshot.
+ Used to set maxChildren value in a dictionary provided by XCAXClient_iOS's method defaultParams.
+
+ @param maxChildren The number of maximum children for traversing elements tree
+ */
++ (void)setSnapshotMaxChildren:(int)maxChildren;
+
+/**
+ @return The number of maximum children for traversing elements tree
+ */
++ (int)snapshotMaxChildren;
+//END
+
 #if !TARGET_OS_TV
 /**
  Set the screenshot orientation for iOS

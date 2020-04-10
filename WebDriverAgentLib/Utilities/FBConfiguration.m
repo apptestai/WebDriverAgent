@@ -51,6 +51,10 @@ static NSMutableDictionary *FBSnapshotRequestParameters;
 static BOOL FBIgnoreKeyboardVisibilityForInput = NO;
 //END
 
+//ADDED BY MO:for solving performance of source api. The table widget have a lot of cells that are outside of the device screen.
+static NSString *FBSnapshotMaxChildrenKey = @"maxChildren";
+//END
+
 #if !TARGET_OS_TV
 static UIInterfaceOrientation FBScreenshotOrientation = UIInterfaceOrientationUnknown;
 #endif
@@ -61,7 +65,10 @@ static UIInterfaceOrientation FBScreenshotOrientation = UIInterfaceOrientationUn
 {
   FBSnapshotRequestParameters = [NSMutableDictionary dictionaryWithDictionary:@{
     @"maxArrayCount": @INT_MAX,
-    @"maxChildren": @INT_MAX,
+    //MODIFIED BY MO:for solving performance of source api. The table widget have a lot of cells that are outside of the device screen.
+//    @"maxChildren": @INT_MAX,
+    FBSnapshotMaxChildrenKey: @100,
+    //END
     FBSnapshotMaxDepthKey: @50, // 50 should be enough for the majority of the cases. The performance is acceptable for values up to 100.
     @"traverseFromParentsToChildren": @1
   }];
@@ -304,6 +311,18 @@ static UIInterfaceOrientation FBScreenshotOrientation = UIInterfaceOrientationUn
 {
   return [FBSnapshotRequestParameters[FBSnapshotMaxDepthKey] intValue];
 }
+
+//ADDED BY MO:for solving performance of source api. The table widget have a lot of cells that are outside of the device screen.
++ (void)setSnapshotMaxChildren:(int)maxChildren
+{
+  FBSnapshotRequestParameters[FBSnapshotMaxChildrenKey] = @(maxChildren);
+}
+
++ (int)snapshotMaxChildren
+{
+  return [FBSnapshotRequestParameters[FBSnapshotMaxChildrenKey] intValue];
+}
+//END
 
 + (NSDictionary *)snapshotRequestParameters
 {
