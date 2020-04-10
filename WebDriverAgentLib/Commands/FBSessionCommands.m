@@ -278,12 +278,12 @@ static NSString* const IGNORE_KEYBOARD_VISIBILITY_FOR_INPUT = @"ignoreKeyboardVi
       INCLUDE_NON_MODAL_ELEMENTS: @([FBConfiguration includeNonModalElements]),
       ACCEPT_ALERT_BUTTON_SELECTOR: FBConfiguration.acceptAlertButtonSelector,
       DISMISS_ALERT_BUTTON_SELECTOR: FBConfiguration.dismissAlertButtonSelector,
+      //ADDED BY MO: for solving setValue issue(>= iOS 13.0) - In the "Sign In with Apple ID" popup of App Store, the password input field is not processed with "An element command could not be completed because the element is in an invalid state (e.g. attempting to click a disabled element)" error.
+      IGNORE_KEYBOARD_VISIBILITY_FOR_INPUT: @([FBConfiguration ignoreKeyboardVisibilityForInput]),
+      //END
 #if !TARGET_OS_TV
       SCREENSHOT_ORIENTATION: [FBConfiguration humanReadableScreenshotOrientation],
 #endif
-      //ADDED BY MO: for solving setValue issue(>= iOS 13.0) - In the "Sign In with Apple ID" popup of App Store, the password input field is not processed with "An element command could not be completed because the element is in an invalid state (e.g. attempting to click a disabled element)" error.
-      IGNORE_KEYBOARD_VISIBILITY_FOR_INPUT: @([FBConfiguration ignoreKeyboardvisibilityForInput]),
-      //END
     }
   );
 }
@@ -353,6 +353,12 @@ static NSString* const IGNORE_KEYBOARD_VISIBILITY_FOR_INPUT = @"ignoreKeyboardVi
   if (nil != [settings objectForKey:DISMISS_ALERT_BUTTON_SELECTOR]) {
     [FBConfiguration setDismissAlertButtonSelector:(NSString *)[settings objectForKey:DISMISS_ALERT_BUTTON_SELECTOR]];
   }
+  
+  //ADDED BY MO: for solving setValue issue(>= iOS 13.0) - In the "Sign In with Apple ID" popup of App Store, the password input field is not processed with "An element command could not be completed because the element is in an invalid state (e.g. attempting to click a disabled element)" error.
+  if (nil != [settings objectForKey:IGNORE_KEYBOARD_VISIBILITY_FOR_INPUT]) {
+    [FBConfiguration setIgnoreKeyboardvisibilityForInput:[[settings objectForKey:IGNORE_KEYBOARD_VISIBILITY_FOR_INPUT] boolValue]];
+  }
+  //END
 
 #if !TARGET_OS_TV
   if (nil != [settings objectForKey:SCREENSHOT_ORIENTATION]) {
@@ -361,13 +367,6 @@ static NSString* const IGNORE_KEYBOARD_VISIBILITY_FOR_INPUT = @"ignoreKeyboardVi
                                              error:&error]) {
       return FBResponseWithStatus([FBCommandStatus invalidArgumentErrorWithMessage:error.description traceback:nil]);
     }
-    
-    //ADDED BY MO: for solving setValue issue(>= iOS 13.0) - In the "Sign In with Apple ID" popup of App Store, the password input field is not processed with "An element command could not be completed because the element is in an invalid state (e.g. attempting to click a disabled element)" error.
-    if (nil != [settings objectForKey:IGNORE_KEYBOARD_VISIBILITY_FOR_INPUT]) {
-      [FBConfiguration setIgnoreKeyboardvisibilityForInput:[[settings objectForKey:IGNORE_KEYBOARD_VISIBILITY_FOR_INPUT] boolValue]];
-    }
-    //END
-
   }
 #endif
 

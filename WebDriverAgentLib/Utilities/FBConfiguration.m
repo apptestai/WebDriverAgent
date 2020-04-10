@@ -47,13 +47,13 @@ static NSString *FBDismissAlertButtonSelector = @"";
 static NSString *FBSnapshotMaxDepthKey = @"maxDepth";
 static NSMutableDictionary *FBSnapshotRequestParameters;
 
+//ADDED BY MO: for solving setValue issue(>= iOS 13.0) - In the "Sign In with Apple ID" popup of App Store, the password input field is not processed with "An element command could not be completed because the element is in an invalid state (e.g. attempting to click a disabled element)" error.
+static BOOL FBIgnoreKeyboardVisibilityForInput = NO;
+//END
+
 #if !TARGET_OS_TV
 static UIInterfaceOrientation FBScreenshotOrientation = UIInterfaceOrientationUnknown;
 #endif
-
-//ADDED BY MO: for solving setValue issue(>= iOS 13.0) - In the "Sign In with Apple ID" popup of App Store, the password input field is not processed with "An element command could not be completed because the element is in an invalid state (e.g. attempting to click a disabled element)" error.
-static BOOL FBIgnoreKeyboardvisibilityForInput = NO;
-//END
 
 @implementation FBConfiguration
 
@@ -350,6 +350,18 @@ static BOOL FBIgnoreKeyboardvisibilityForInput = NO;
   return FBDismissAlertButtonSelector;
 }
 
+//ADDED BY MO: for solving setValue issue(>= iOS 13.0) - In the "Sign In with Apple ID" popup of App Store, the password input field is not processed with "An element command could not be completed because the element is in an invalid state (e.g. attempting to click a disabled element)" error.
++ (void)setIgnoreKeyboardvisibilityForInput:(BOOL)isEnabled
+{
+  FBIgnoreKeyboardVisibilityForInput = isEnabled;
+}
+
++ (BOOL)ignoreKeyboardVisibilityForInput
+{
+  return FBIgnoreKeyboardVisibilityForInput;
+}
+//END
+
 #if !TARGET_OS_TV
 + (BOOL)setScreenshotOrientation:(NSString *)orientation error:(NSError **)error
 {
@@ -395,18 +407,6 @@ static BOOL FBIgnoreKeyboardvisibilityForInput = NO;
   }
 }
 #endif
-
-//ADDED BY MO: for solving setValue issue(>= iOS 13.0) - In the "Sign In with Apple ID" popup of App Store, the password input field is not processed with "An element command could not be completed because the element is in an invalid state (e.g. attempting to click a disabled element)" error.
-+ (void)setIgnoreKeyboardvisibilityForInput:(BOOL)isEnabled
-{
-  FBIgnoreKeyboardvisibilityForInput = isEnabled;
-}
-
-+ (BOOL)ignoreKeyboardvisibilityForInput
-{
-  return FBIgnoreKeyboardvisibilityForInput;
-}
-//END
 
 #pragma mark Private
 

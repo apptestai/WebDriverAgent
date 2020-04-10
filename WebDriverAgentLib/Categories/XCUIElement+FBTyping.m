@@ -46,7 +46,7 @@
 //    return YES;
 //  }
   BOOL wasKeyboardAlreadyVisible = YES;
-  if (![FBConfiguration ignoreKeyboardvisibilityForInput]) {
+  if (![FBConfiguration ignoreKeyboardVisibilityForInput]) {
     wasKeyboardAlreadyVisible = [FBKeyboard waitUntilVisibleForApplication:self.application timeout:-1 error:error];
     if (wasKeyboardAlreadyVisible && self.hasKeyboardFocus) {
       return YES;
@@ -68,7 +68,7 @@
 //    if (isKeyboardVisible && self.hasKeyboardFocus) {
 //      return YES;
 //    }
-    if (![FBConfiguration ignoreKeyboardvisibilityForInput]) {
+    if (![FBConfiguration ignoreKeyboardVisibilityForInput]) {
       isKeyboardVisible = [FBKeyboard waitUntilVisibleForApplication:self.application timeout:-1 error:error];
       if (isKeyboardVisible && self.hasKeyboardFocus) {
         return YES;
