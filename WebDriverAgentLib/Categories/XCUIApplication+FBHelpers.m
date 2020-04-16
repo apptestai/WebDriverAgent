@@ -265,20 +265,11 @@ static NSRegularExpression *pidRegex = nil;
   
   // accessibility Description
   NSMutableArray<NSString *> *childrenDescriptions = [NSMutableArray array];
-  // In iOS < 13.0, do not use the query childrenMatchingType, because of the a drop in page_source performance.
-  if (SYSTEM_VERSION_LESS_THAN(@"13.0")) {
-    NSString *desc = self.fb_lastSnapshot.recursiveDescriptionIncludingAccessibilityElement;
+  for (XCUIElement *child in [self.fb_query childrenMatchingType:XCUIElementTypeAny].allElementsBoundByAccessibilityElement) {
+    NSString *desc = child.fb_lastSnapshot.recursiveDescriptionIncludingAccessibilityElement;
     if (desc != nil) {
       [self findBundleIDs:bundleIDs inAccessibilityDesc:desc];
       [childrenDescriptions addObject:desc];
-    }
-  } else {
-    for (XCUIElement *child in [self.fb_query childrenMatchingType:XCUIElementTypeAny].allElementsBoundByAccessibilityElement) {
-      NSString *desc = child.fb_lastSnapshot.recursiveDescriptionIncludingAccessibilityElement;
-      if (desc != nil) {
-        [self findBundleIDs:bundleIDs inAccessibilityDesc:desc];
-        [childrenDescriptions addObject:desc];
-      }
     }
   }
   
