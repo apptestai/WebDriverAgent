@@ -61,7 +61,7 @@ static NSString *const SOURCE_FORMAT_DESCRIPTION_V2 = @"accessibilityDescription
     result = application.fb_descriptionRepresentation;
   // ADDED BY MO: extends page_source
   } else  if ([sourceType caseInsensitiveCompare:SOURCE_FORMAT_DESCRIPTION_V2] == NSOrderedSame) {
-      result = application.fb_descriptionRepresentation_v2;
+    result = application.fb_descriptionRepresentation_v2;
   //END
   } else {
     return FBResponseWithStatus([FBCommandStatus invalidArgumentErrorWithMessage:[NSString stringWithFormat:@"Unknown source format '%@'. Only %@ source formats are supported.",

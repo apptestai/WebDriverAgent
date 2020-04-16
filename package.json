@@ -16,8 +16,7 @@
     "precommit-msg": "echo 'Pre-commit checks...' && exit 0",
     "precommit-test": "gulp lint",
     "bundle": "node ./ci-jobs/scripts/build-webdriveragent.js",
-    "fetch-prebuilt-wda": "node ./Scripts/fetch-prebuilt-wda",
-	"built-wda": "rm -rf DerivedData && _PWD=`pwd` && ./Scripts/built-wda.sh -x \"${npm_config_xcconfig}\" -p \"${_PWD}\" -d \"${_PWD}/DerivedData/WDA\""
+    "fetch-prebuilt-wda": "node ./Scripts/fetch-prebuilt-wda"
   },
   "bin": {
     "appium-wda-bootstrap": "./build/index.js"
