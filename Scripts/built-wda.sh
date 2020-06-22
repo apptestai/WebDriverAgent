@@ -94,5 +94,5 @@ if [ ! -n "${DERIVED_DATA_PATH}" ]; then
 fi
 
 verbose "\nbuild-for-testing ..."
-echo ${XCODEBUILD}/Contents/Developer/usr/bin/xcodebuild clean build-for-testing -project ${PROJECT}/WebDriverAgent.xcodeproj -scheme WebDriverAgentRunner -xcconfig ${XCONFIG} -derivedDataPath "${DERIVED_DATA_PATH}/${NAME}" -destination generic/platform=iOS
-${XCODEBUILD}/Contents/Developer/usr/bin/xcodebuild clean build-for-testing -project ${PROJECT}/WebDriverAgent.xcodeproj -scheme WebDriverAgentRunner -xcconfig ${XCONFIG} -derivedDataPath "${DERIVED_DATA_PATH}/${NAME}" -destination generic/platform=iOS
+echo ${XCODEBUILD}/Contents/Developer/usr/bin/xcodebuild clean build-for-testing -project ${PROJECT}/WebDriverAgent.xcodeproj -scheme WebDriverAgentRunner -xcconfig ${XCONFIG} -derivedDataPath "${DERIVED_DATA_PATH}/${NAME}" -destination generic/platform=iOS -allowProvisioningUpdates
+${XCODEBUILD}/Contents/Developer/usr/bin/xcodebuild clean build-for-testing -project ${PROJECT}/WebDriverAgent.xcodeproj -scheme WebDriverAgentRunner -xcconfig ${XCONFIG} -derivedDataPath "${DERIVED_DATA_PATH}/${NAME}" -destination generic/platform=iOS -allowProvisioningUpdates
