@@ -34,8 +34,21 @@ If you are having some issues please checkout [wiki](https://github.com/facebook
 ## For Contributors
 If you want to help us out, you are more than welcome to. However please make sure you have followed the guidelines in [CONTRIBUTING](CONTRIBUTING.md).
 
+## Creating Bundles
+Follow [this doc](docs/CREATING_BUNDLES.md)
+
 ## License
 
 [`WebDriverAgent` is BSD-licensed](LICENSE). We also provide an additional [patent grant](PATENTS).
+
+## Third Party Sources
+
+WebDriverAgent depends on [CocoaHTTPServer](https://github.com/robbiehanson/CocoaHTTPServer)
+and [RoutingHTTPServer](https://github.com/mattstevens/RoutingHTTPServer).
+
+These projects haven't been maintained in a while. That's why the source code of these
+projects has been integrated directly in the WebDriverAgent source tree.
+
+You can find the source files and their licenses in the `WebDriverAgentLib/Vendor` directory.
 
 Have fun!

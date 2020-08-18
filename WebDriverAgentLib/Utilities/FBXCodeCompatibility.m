@@ -70,6 +70,10 @@ static dispatch_once_t onceAppWithPIDToken;
   dispatch_once(&onceAppWithPIDToken, ^{
     FBShouldUseOldAppWithPIDSelector = [XCUIApplication respondsToSelector:@selector(appWithPID:)];
   });
+  if (0 == processID) {
+    return nil;
+  }
+
   if (FBShouldUseOldAppWithPIDSelector) {
     return [self appWithPID:processID];
   }
@@ -124,8 +128,15 @@ static dispatch_once_t onceAppWithPIDToken;
 {
   XCUIElement* match = FBConfiguration.useFirstMatch
     ? self.firstMatch
-    : self.allElementsBoundByAccessibilityElement.firstObject;
+    : self.fb_allMatches.firstObject;
   return [match exists] ? match : nil;
+}
+
+- (NSArray<XCUIElement *> *)fb_allMatches
+{
+  return FBConfiguration.boundElementsByIndex
+    ? self.allElementsBoundByIndex
+    : self.allElementsBoundByAccessibilityElement;
 }
 
 - (XCElementSnapshot *)fb_elementSnapshotForDebugDescription
