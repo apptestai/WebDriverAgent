@@ -40,14 +40,28 @@
 
 @implementation XCUIElement (FBTyping)
 
+// MODIFIED BY MO: for solving setValue issue(>= iOS 13.0) - In the "Sign In with Apple ID" popup of App Store, the password input field is not processed with "An element command could not be completed because the element is in an invalid state (e.g. attempting to click a disabled element)" error.
+//- (BOOL)fb_hasKeyboardFocus
+//{
+//  // https://developer.apple.com/documentation/xctest/xcuielement/1500968-typetext?language=objc
+//  // > The element or a descendant must have keyboard focus; otherwise an error is raised.
+//  return self.hasKeyboardFocus || [[[self.fb_query descendantsMatchingType:XCUIElementTypeAny]
+//   matchingPredicate:[NSPredicate predicateWithFormat:@"hasKeyboardFocus == YES"]]
+//  count] > 0;
+//}
 - (BOOL)fb_hasKeyboardFocus
 {
+//  and modified it to improve performance 
+  if ([FBConfiguration ignoreKeyboardVisibilityForInput]) {
+    return YES;
+  }
   // https://developer.apple.com/documentation/xctest/xcuielement/1500968-typetext?language=objc
   // > The element or a descendant must have keyboard focus; otherwise an error is raised.
   return self.hasKeyboardFocus || [[[self.fb_query descendantsMatchingType:XCUIElementTypeAny]
    matchingPredicate:[NSPredicate predicateWithFormat:@"hasKeyboardFocus == YES"]]
   count] > 0;
 }
+//END
 
 - (BOOL)fb_prepareForTextInputWithError:(NSError **)error
 {

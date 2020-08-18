@@ -231,6 +231,26 @@ typedef NS_ENUM(NSInteger, FBConfigurationKeyboardPreference) {
 + (void)setDismissAlertButtonSelector:(NSString *)classChainSelector;
 + (NSString *)dismissAlertButtonSelector;
 
+//ADDED BY MO: for solving setValue issue(>= iOS 13.0) - In the "Sign In with Apple ID" popup of App Store, the password input field is not processed with "An element command could not be completed because the element is in an invalid state (e.g. attempting to click a disabled element)" error.
++ (void)setIgnoreKeyboardvisibilityForInput:(BOOL)isEnabled;
++ (BOOL)ignoreKeyboardVisibilityForInput;
+//END
+
+//ADDED BY MO:for solving performance of source api. The table widget have a lot of cells that are outside of the device screen.
+/**
+ Sets maximum children for traversing elements tree from parents to children while requesting XCElementSnapshot.
+ Used to set maxChildren value in a dictionary provided by XCAXClient_iOS's method defaultParams.
+
+ @param maxChildren The number of maximum children for traversing elements tree
+ */
++ (void)setSnapshotMaxChildren:(int)maxChildren;
+
+/**
+ @return The number of maximum children for traversing elements tree
+ */
++ (int)snapshotMaxChildren;
+//END
+
 #if !TARGET_OS_TV
 /**
  Set the screenshot orientation for iOS

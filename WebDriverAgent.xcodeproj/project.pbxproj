@@ -729,6 +729,8 @@
 		EEE9B4731CD02B88009D2030 /* FBRunLoopSpinner.m in Sources */ = {isa = PBXBuildFile; fileRef = EEE9B4711CD02B88009D2030 /* FBRunLoopSpinner.m */; };
 		EEEC7C921F21F27A0053426C /* FBPredicate.h in Headers */ = {isa = PBXBuildFile; fileRef = EEEC7C901F21F27A0053426C /* FBPredicate.h */; };
 		EEEC7C931F21F27A0053426C /* FBPredicate.m in Sources */ = {isa = PBXBuildFile; fileRef = EEEC7C911F21F27A0053426C /* FBPredicate.m */; };
+		EF46970624EBCE07007E2B3F /* FBNetworkUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = EF46970524EBCE07007E2B3F /* FBNetworkUtils.h */; };
+		EF46970824EBCE19007E2B3F /* FBNetworkUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = EF46970724EBCE19007E2B3F /* FBNetworkUtils.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1292,6 +1294,8 @@
 		EEEC7C901F21F27A0053426C /* FBPredicate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FBPredicate.h; sourceTree = "<group>"; };
 		EEEC7C911F21F27A0053426C /* FBPredicate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FBPredicate.m; sourceTree = "<group>"; };
 		EEF9882A1C486603005CA669 /* WebDriverAgentRunner.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WebDriverAgentRunner.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		EF46970524EBCE07007E2B3F /* FBNetworkUtils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FBNetworkUtils.h; sourceTree = "<group>"; };
+		EF46970724EBCE19007E2B3F /* FBNetworkUtils.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FBNetworkUtils.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1830,6 +1834,8 @@
 				6385F4A5220A40760095BBDB /* XCUIApplicationProcessDelay.m */,
 				31EC77FA224F7D0600380FCD /* XCUIApplicationProcessQuiescence.h */,
 				31EC77FB224F7D0600380FCD /* XCUIApplicationProcessQuiescence.m */,
+				EF46970524EBCE07007E2B3F /* FBNetworkUtils.h */,
+				EF46970724EBCE19007E2B3F /* FBNetworkUtils.m */,
 			);
 			name = Utilities;
 			path = WebDriverAgentLib/Utilities;
@@ -2466,6 +2472,7 @@
 				EE35AD381E3B77D600A02D78 /* XCSymbolicationRecord.h in Headers */,
 				EE35AD6E1E3B77D600A02D78 /* XCUIDevice.h in Headers */,
 				71BD20731F86116100B36EC2 /* XCUIApplication+FBTouchAction.h in Headers */,
+				EF46970624EBCE07007E2B3F /* FBNetworkUtils.h in Headers */,
 				EE158ACE1CBD456F00A3E3F0 /* FBCommandHandler.h in Headers */,
 				EE158AC81CBD456F00A3E3F0 /* FBSessionCommands.h in Headers */,
 				641EE70B2240CE2D00173FCB /* FBTVNavigationTracker.h in Headers */,
@@ -3023,6 +3030,7 @@
 				641EE70E2240CE4800173FCB /* FBTVNavigationTracker.m in Sources */,
 				71BD20741F86116100B36EC2 /* XCUIApplication+FBTouchAction.m in Sources */,
 				EE158AE71CBD456F00A3E3F0 /* FBWebServer.m in Sources */,
+				EF46970824EBCE19007E2B3F /* FBNetworkUtils.m in Sources */,
 				31EC77FE224F7D0600380FCD /* XCUIApplicationProcessQuiescence.m in Sources */,
 				715557D4211DBCE700613B26 /* FBTCPSocket.m in Sources */,
 				EE3A18631CDE618F00DE4205 /* FBErrorBuilder.m in Sources */,
