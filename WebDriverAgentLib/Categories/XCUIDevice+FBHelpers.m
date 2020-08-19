@@ -13,6 +13,9 @@
 #import <ifaddrs.h>
 #include <notify.h>
 #import <objc/runtime.h>
+//ADDED BY MO
+#import <sys/utsname.h>
+//END
 
 #import "FBSpringboardApplication.h"
 #import "FBErrorBuilder.h"
@@ -333,4 +336,12 @@ static bool fb_isLocked;
 }
 #endif
 
+//ADDED BY MO
+- (nullable NSString *)fb_devicePlatform
+{
+  struct utsname systemInfo;
+  uname(&systemInfo);
+  return [NSString stringWithCString:systemInfo.machine encoding:NSUTF8StringEncoding];
+}
+//END
 @end

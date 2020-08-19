@@ -275,34 +275,25 @@ static NSRegularExpression *pidRegex = nil;
   
   // Application Desc
   UIInterfaceOrientation orientation = self.interfaceOrientation;
-  CGRect rect = self.frame;
-  CGFloat x = rect.origin.x;
-  CGFloat y = rect.origin.y;
-  CGFloat width = rect.size.width;
-  CGFloat height = rect.size.height;
-  
   int rotation = 0;
+  CGRect bounds = self.fb_screenBounds;
   if (orientation == UIInterfaceOrientationLandscapeRight) {
     rotation = 1;
-    width = rect.size.height;
-    height = rect.size.width;
-    
   } else if (orientation == UIInterfaceOrientationPortraitUpsideDown) {
     rotation = 2;
-    
   } else if (orientation == UIInterfaceOrientationLandscapeLeft) {
     rotation = 3;
-    width = rect.size.height;
-    height = rect.size.width;
   }
   
   NSString *applicationDescription = nil;
   NSData *bundleIDsJson = [NSJSONSerialization dataWithJSONObject:bundleIDs options:0 error:nil];
   if (bundleIDsJson) {
     NSString *bundleIDsDesc = [[NSString alloc] initWithData:bundleIDsJson encoding:NSUTF8StringEncoding];
-    applicationDescription = [NSString stringWithFormat:@"BundleIDs, %@\n\nApplication, bundle: %@, rotation: %d, {{%.1f, %.1f}, {%.1f, %.1f}}, pid: %@", bundleIDsDesc, self.bundleID, rotation, x, y, width, height, pid];
+    applicationDescription = [NSString stringWithFormat:@"BundleIDs, %@\n\nApplication, bundle: %@, rotation: %d, {{%.1f, %.1f}, {%.1f, %.1f}}, pid: %@",
+                              bundleIDsDesc, self.bundleID, rotation, bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height, pid];
   } else {
-    applicationDescription = [NSString stringWithFormat:@"Application, bundle: %@, rotation: %d, {{%.1f, %.1f}, {%.1f, %.1f}}, pid: %@", self.bundleID, rotation, x, y, width, height, pid];
+    applicationDescription = [NSString stringWithFormat:@"Application, bundle: %@, rotation: %d, {{%.1f, %.1f}, {%.1f, %.1f}}, pid: %@",
+                              self.bundleID, rotation, bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height, pid];
   }
   
   if (0 == childrenDescriptions.count) {
@@ -311,6 +302,28 @@ static NSRegularExpression *pidRegex = nil;
   
   [childrenDescriptions insertObject:applicationDescription atIndex:0];
   return [childrenDescriptions componentsJoinedByString:@"\n\n"];
+}
+//END
+
+// ADDED BY MO
+- (CGRect)fb_screenBounds
+{
+  UIInterfaceOrientation orientation = self.interfaceOrientation;
+  CGRect rect = self.frame;
+  CGFloat x = rect.origin.x;
+  CGFloat y = rect.origin.y;
+  CGFloat width = rect.size.width;
+  CGFloat height = rect.size.height;
+  
+  if (orientation == UIInterfaceOrientationLandscapeRight) {
+    width = rect.size.height;
+    height = rect.size.width;
+  } else if (orientation == UIInterfaceOrientationPortraitUpsideDown) {
+  } else if (orientation == UIInterfaceOrientationLandscapeLeft) {
+    width = rect.size.height;
+    height = rect.size.width;
+  }
+  return CGRectMake(x, y, width, height);
 }
 //END
 @end

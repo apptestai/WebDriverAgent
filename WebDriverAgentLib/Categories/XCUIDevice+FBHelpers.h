@@ -100,6 +100,14 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (BOOL)fb_activateSiriVoiceRecognitionWithText:(NSString *)text error:(NSError **)error;
 
+//ADDED BY MO
+/**
+utsname#machine
+
+@return utsname#machine
+*/
+- (nullable NSString *)fb_devicePlatform;
+// END
 @end
 
 NS_ASSUME_NONNULL_END

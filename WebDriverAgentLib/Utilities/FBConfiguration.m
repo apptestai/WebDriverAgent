@@ -55,6 +55,10 @@ static BOOL FBIgnoreKeyboardVisibilityForInput = NO;
 static NSString *FBSnapshotMaxChildrenKey = @"maxChildren";
 //END
 
+//ADDED BY MO:for solving an issue that when the page_source api is called, a popup is dismissed. ref. FBActiveAppDetectionPoint.m
+static NSString *FBActiveAppDetectionPoint = @"";
+//END
+
 #if !TARGET_OS_TV
 static UIInterfaceOrientation FBScreenshotOrientation = UIInterfaceOrientationUnknown;
 #endif
@@ -380,6 +384,24 @@ static UIInterfaceOrientation FBScreenshotOrientation = UIInterfaceOrientationUn
   return FBIgnoreKeyboardVisibilityForInput;
 }
 //END
+
+//ADDED BY MO:for solving an issue that when the page_source api is called, a popup is dismissed. ref. FBActiveAppDetectionPoint.m
++ (void)setActiveAppDetectionPoint:(NSString *)point
+{
+  if (point == nil) {
+    FBActiveAppDetectionPoint = @"";
+  } else {
+    FBActiveAppDetectionPoint = point;
+  }
+}
++ (NSString *)activeAppDetectionPoint
+{
+  if (FBActiveAppDetectionPoint == nil) {
+    return @"";
+  }
+  return FBActiveAppDetectionPoint;
+}
+//NED
 
 #if !TARGET_OS_TV
 + (BOOL)setScreenshotOrientation:(NSString *)orientation error:(NSError **)error

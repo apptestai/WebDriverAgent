@@ -57,6 +57,10 @@ static NSString* const IGNORE_KEYBOARD_VISIBILITY_FOR_INPUT = @"ignoreKeyboardVi
 static NSString* const SNAPSHOT_MAX_CHILDREN = @"snapshotMaxChildren";
 //END
 
+//ADDED BY MO:for solving an issue that when the page_source api is called, a popup is dismissed. ref. FBActiveAppDetectionPoint.m
+static NSString* const ACTIVE_APP_DETECTION_POINT_VALUE = @"activeAppDetectionPointValue";
+//END
+
 @implementation FBSessionCommands
 
 #pragma mark - <FBCommandHandler>
@@ -278,7 +282,11 @@ static NSString* const SNAPSHOT_MAX_CHILDREN = @"snapshotMaxChildren";
       USE_FIRST_MATCH: @([FBConfiguration useFirstMatch]),
       REDUCE_MOTION: @([FBConfiguration reduceMotionEnabled]),
       DEFAULT_ACTIVE_APPLICATION: request.session.defaultActiveApplication,
-      ACTIVE_APP_DETECTION_POINT: FBActiveAppDetectionPoint.sharedInstance.stringCoordinates,
+      // MODIFIED BY MO:for solving an issue that when the page_source api is called, a popup is dismissed. ref. FBActiveAppDetectionPoint.m
+//      ACTIVE_APP_DETECTION_POINT: FBActiveAppDetectionPoint.sharedInstance.stringCoordinates,
+      ACTIVE_APP_DETECTION_POINT: FBConfiguration.activeAppDetectionPoint,
+      ACTIVE_APP_DETECTION_POINT_VALUE: FBActiveAppDetectionPoint.sharedInstance.stringCoordinates,
+      // END
       INCLUDE_NON_MODAL_ELEMENTS: @([FBConfiguration includeNonModalElements]),
       ACCEPT_ALERT_BUTTON_SELECTOR: FBConfiguration.acceptAlertButtonSelector,
       DISMISS_ALERT_BUTTON_SELECTOR: FBConfiguration.dismissAlertButtonSelector,
@@ -341,6 +349,9 @@ static NSString* const SNAPSHOT_MAX_CHILDREN = @"snapshotMaxChildren";
     request.session.defaultActiveApplication = (NSString *)[settings objectForKey:DEFAULT_ACTIVE_APPLICATION];
   }
   if (nil != [settings objectForKey:ACTIVE_APP_DETECTION_POINT]) {
+    // ADDED BY MO: for solving an issue that when the page_source api is called, a popup is dismissed. ref. FBActiveAppDetectionPoint.m
+    [FBConfiguration setActiveAppDetectionPoint:(NSString *)[settings objectForKey:ACTIVE_APP_DETECTION_POINT]];
+    // END
     NSError *error;
     if (![FBActiveAppDetectionPoint.sharedInstance setCoordinatesWithString:(NSString *)[settings objectForKey:ACTIVE_APP_DETECTION_POINT]
                                                                       error:&error]) {

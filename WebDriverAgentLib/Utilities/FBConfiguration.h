@@ -230,6 +230,18 @@ NS_ASSUME_NONNULL_BEGIN
 + (int)snapshotMaxChildren;
 //END
 
+//ADDED BY MO:for solving an issue that when the page_source api is called, a popup is dismissed. ref. FBActiveAppDetectionPoint.m
+/**
+  Sets activeAppDetectionPoint value
+  @param point "x, y" or reserved keywords such as left-top, top, right-top, center, left-bottom, bottom, right-bottom
+ */
++ (void)setActiveAppDetectionPoint:(NSString *)point;
+/**
+ @return value  "x, y" or reserved keywords such as left-top, top, right-top, center, left-bottom, bottom, right-bottom
+*/
++ (NSString *)activeAppDetectionPoint;
+//END
+
 #if !TARGET_OS_TV
 /**
  Set the screenshot orientation for iOS
