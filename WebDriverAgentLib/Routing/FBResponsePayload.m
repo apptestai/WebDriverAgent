@@ -17,6 +17,7 @@
 #import "FBMacros.h"
 #import "FBProtocolHelpers.h"
 
+#import "XCUIElementQuery.h"
 #import "XCUIElement+FBUtilities.h"
 #import "XCUIElement+FBWebDriverAttributes.h"
 
@@ -34,20 +35,16 @@ id<FBResponsePayload> FBResponseWithObject(id object)
 
 id<FBResponsePayload> FBResponseWithCachedElement(XCUIElement *element, FBElementCache *elementCache, BOOL compact)
 {
-  NSString *elementUUID = [elementCache storeElement:element];
-  return nil == elementUUID
-    ? FBResponseWithStatus([FBCommandStatus staleElementReferenceErrorWithMessage:nil traceback:nil])
-    : FBResponseWithStatus([FBCommandStatus okWithValue: FBDictionaryResponseWithElement(element, elementUUID, compact)]);
+  [elementCache storeElement:element];
+  return FBResponseWithStatus([FBCommandStatus okWithValue: FBDictionaryResponseWithElement(element, compact)]);
 }
 
 id<FBResponsePayload> FBResponseWithCachedElements(NSArray<XCUIElement *> *elements, FBElementCache *elementCache, BOOL compact)
 {
   NSMutableArray *elementsResponse = [NSMutableArray array];
   for (XCUIElement *element in elements) {
-    NSString *elementUUID = [elementCache storeElement:element];
-    if (nil != elementUUID) {
-      [elementsResponse addObject:FBDictionaryResponseWithElement(element, elementUUID, compact)];
-    }
+    [elementCache storeElement:element];
+    [elementsResponse addObject:FBDictionaryResponseWithElement(element, compact)];
   }
   return FBResponseWithStatus([FBCommandStatus okWithValue:elementsResponse]);
 }
@@ -85,13 +82,19 @@ id<FBResponsePayload> FBResponseWithStatus(FBCommandStatus *status)
                                             httpStatusCode:status.statusCode];
 }
 
-inline NSDictionary *FBDictionaryResponseWithElement(XCUIElement *element, NSString *elementUUID, BOOL compact)
+inline NSDictionary *FBDictionaryResponseWithElement(XCUIElement *element, BOOL compact)
 {
-  NSMutableDictionary *dictionary = FBInsertElement(@{}, elementUUID).mutableCopy;
+  XCElementSnapshot *snapshot = nil;
+  if (nil != element.query.rootElementSnapshot) {
+    snapshot = element.fb_cachedSnapshot;
+  }
+  if (nil == snapshot) {
+    snapshot = element.lastSnapshot ?: element.fb_takeSnapshot;
+  }
+  NSMutableDictionary *dictionary = FBInsertElement(@{}, (NSString *)snapshot.wdUID).mutableCopy;
   if (!compact) {
     NSArray *fields = [FBConfiguration.elementResponseAttributes componentsSeparatedByString:@","];
-    XCElementSnapshot *snapshot = element.fb_lastSnapshotFromQuery;
-    for(NSString *field in fields) {
+    for (NSString *field in fields) {
       // 'name' here is the w3c-approved identifier for what we mean by 'type'
       if ([field isEqualToString:@"name"] || [field isEqualToString:@"type"]) {
         dictionary[field] = snapshot.wdType;
@@ -104,7 +107,7 @@ inline NSDictionary *FBDictionaryResponseWithElement(XCUIElement *element, NSStr
       } else if ([field isEqualToString:@"displayed"]) {
         dictionary[field] = @(snapshot.wdVisible);
       } else if ([field isEqualToString:@"selected"]) {
-        dictionary[field] = @(snapshot.selected);
+        dictionary[field] = @(snapshot.wdSelected);
       } else if ([field isEqualToString:@"label"]) {
         dictionary[field] = snapshot.wdLabel ?: [NSNull null];
       } else if ([field hasPrefix:arbitraryAttrPrefix]) {

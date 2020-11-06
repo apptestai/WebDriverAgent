@@ -13,7 +13,7 @@
 
 #import "FBApplication.h"
 #import "FBConfiguration.h"
-#import "FBExceptionHandler.h"
+#import "FBKeyboard.h"
 #import "FBPasteboard.h"
 #import "FBResponsePayload.h"
 #import "FBRoute.h"
@@ -58,6 +58,7 @@
     [[FBRoute POST:@"/wda/siri/activate"] respondWithTarget:self action:@selector(handleActivateSiri:)],
     [[FBRoute POST:@"/wda/apps/launchUnattached"].withoutSession respondWithTarget:self action:@selector(handleLaunchUnattachedApp:)],
     [[FBRoute GET:@"/wda/device/info"] respondWithTarget:self action:@selector(handleGetDeviceInfo:)],
+    [[FBRoute POST:@"/wda/resetAppAuth"] respondWithTarget:self action:@selector(handleResetAppAuth:)],
     [[FBRoute GET:@"/wda/device/info"].withoutSession respondWithTarget:self action:@selector(handleGetDeviceInfo:)],
     [[FBRoute OPTIONS:@"/*"].withoutSession respondWithTarget:self action:@selector(handlePingCommand:)],
   ];
@@ -96,7 +97,9 @@
 + (id<FBResponsePayload>)handleDismissKeyboardCommand:(FBRouteRequest *)request
 {
 #if TARGET_OS_TV
-  if ([self isKeyboardPresentForApplication:request.session.activeApplication]) {
+  if ([FBKeyboard waitUntilVisibleForApplication:request.session.activeApplication
+                                         timeout:0
+                                           error:nil]) {
     [[XCUIRemote sharedRemote] pressButton: XCUIRemoteButtonMenu];
   }
 #else
@@ -107,16 +110,18 @@
   if ([UIDevice.currentDevice userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
     errorDescription = @"The keyboard on iPhone cannot be dismissed because of a known XCTest issue. Try to dismiss it in the way supported by your application under test.";
   }
-  BOOL isKeyboardNotPresent =
-  [[[[FBRunLoopSpinner new]
-     timeout:5]
-    timeoutErrorMessage:errorDescription]
-   spinUntilTrue:^BOOL{
-     return ![self isKeyboardPresentForApplication:request.session.activeApplication];
-   }
-   error:&error];
+  BOOL isKeyboardNotPresent = [[[[FBRunLoopSpinner new]
+                                 timeout:5]
+                                timeoutErrorMessage:errorDescription]
+                               spinUntilTrue:^BOOL{
+    return ![FBKeyboard waitUntilVisibleForApplication:request.session.activeApplication
+                                               timeout:0
+                                                 error:nil];
+  }
+                               error:&error];
   if (!isKeyboardNotPresent) {
-    return FBResponseWithStatus([FBCommandStatus elementNotVisibleErrorWithMessage:error.description traceback:[NSString stringWithFormat:@"%@", NSThread.callStackSymbols]]);
+    return FBResponseWithStatus([FBCommandStatus elementNotVisibleErrorWithMessage:error.description
+                                                                         traceback:nil]);
   }
   return FBResponseWithOK();
 }
@@ -127,11 +132,6 @@
 }
 
 #pragma mark - Helpers
-
-+ (BOOL)isKeyboardPresentForApplication:(XCUIApplication *)application {
-  XCUIElement *foundKeyboard = [application.fb_query descendantsMatchingType:XCUIElementTypeKeyboard].fb_firstMatch;
-  return foundKeyboard && foundKeyboard.fb_isVisible;
-}
 
 + (id<FBResponsePayload>)handleGetScreen:(FBRouteRequest *)request
 {
@@ -281,6 +281,21 @@
     return FBResponseWithOK();
   }
   return FBResponseWithStatus([FBCommandStatus unknownErrorWithMessage:@"LSApplicationWorkspace failed to launch app" traceback:nil]);
+}
+
++ (id <FBResponsePayload>)handleResetAppAuth:(FBRouteRequest *)request
+{
+  NSNumber *resource = request.arguments[@"resource"];
+  if (nil == resource) {
+    NSString *errMsg = @"The 'resource' argument must be set to a valid resource identifier (numeric value). See https://developer.apple.com/documentation/xctest/xcuiprotectedresource?language=objc";
+    return FBResponseWithStatus([FBCommandStatus invalidArgumentErrorWithMessage:errMsg traceback:nil]);
+  }
+  NSError *error;
+  if (![request.session.activeApplication fb_resetAuthorizationStatusForResource:resource.longLongValue
+                                                                           error:&error]) {
+    return FBResponseWithUnknownError(error);
+  }
+  return FBResponseWithOK();
 }
 
 + (id<FBResponsePayload>)handleGetDeviceInfo:(FBRouteRequest *)request

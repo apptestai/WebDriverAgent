@@ -11,6 +11,7 @@
 
 #import "FBIntegrationTestCase.h"
 #import "FBElementUtils.h"
+#import "FBExceptions.h"
 #import "FBTestMacros.h"
 #import "XCUIElement.h"
 #import "XCUIElement+FBFind.h"
@@ -34,8 +35,7 @@
     [self launchApplication];
   });
   self.testedView = self.testedApplication.otherElements[@"MainView"];
-  XCTAssertTrue(self.testedView.exists);
-  [self.testedView fb_nativeResolve];
+  FBAssertWaitTillBecomesTrue(self.testedView.exists);
 }
 
 - (void)testDescendantsWithClassName
@@ -45,6 +45,7 @@
     @"Attributes",
     @"Scrolling",
     @"Deadlock app",
+    @"Touch",
   ]];
   NSArray<XCUIElement *> *matchingSnapshots = [self.testedView fb_descendantsMatchingClassName:@"XCUIElementTypeButton" shouldReturnAfterFirstMatch:NO];
   XCTAssertEqual(matchingSnapshots.count, expectedLabels.count);
@@ -73,6 +74,8 @@
   XCTAssertEqual(matchingSnapshots.count, snapshotsCount);
   XCTAssertEqual(matchingSnapshots.firstObject.elementType, XCUIElementTypeButton);
   XCTAssertEqualObjects(matchingSnapshots.lastObject.label, @"Alerts");
+  NSArray<XCUIElement *> *selfElementsById = [matchingSnapshots.lastObject fb_descendantsMatchingIdentifier:@"Alerts" shouldReturnAfterFirstMatch:NO];
+  XCTAssertEqual(selfElementsById.count, 1);
 }
 
 - (void)testSingleDescendantWithIdentifier
@@ -176,6 +179,9 @@
   XCTAssertEqual(matchingSnapshots.count, snapshotsCount);
   XCTAssertEqual(matchingSnapshots.firstObject.elementType, XCUIElementTypeButton);
   XCTAssertEqualObjects(matchingSnapshots.lastObject.label, @"Alerts");
+  NSPredicate *selfPredicate = [NSPredicate predicateWithFormat:@"label == 'Alerts'"];
+  NSArray<XCUIElement *> *selfElementsByPredicate = [matchingSnapshots.lastObject fb_descendantsMatchingPredicate:selfPredicate shouldReturnAfterFirstMatch:NO];
+  XCTAssertEqual(selfElementsByPredicate.count, 1);
 }
 
 - (void)testSelfWithPredicateString
@@ -239,7 +245,7 @@
   NSArray<XCUIElement *> *matchingSnapshots;
   NSString *queryString =@"XCUIElementTypeWindow/XCUIElementTypeOther/**/XCUIElementTypeButton";
   matchingSnapshots = [self.testedApplication fb_descendantsMatchingClassChain:queryString shouldReturnAfterFirstMatch:NO];
-  XCTAssertEqual(matchingSnapshots.count, 4); // /XCUIElementTypeButton
+  XCTAssertEqual(matchingSnapshots.count, 5); // /XCUIElementTypeButton
   for (XCUIElement *matchingSnapshot in matchingSnapshots) {
     XCTAssertEqual(matchingSnapshot.elementType, XCUIElementTypeButton);
   }
@@ -261,7 +267,7 @@
   } else {
     matchingSnapshots = [self.testedApplication fb_descendantsMatchingClassChain:queryString shouldReturnAfterFirstMatch:NO];
   }
-  XCTAssertEqual(matchingSnapshots.count, 4); // /XCUIElementTypeButton
+  XCTAssertEqual(matchingSnapshots.count, 5); // /XCUIElementTypeButton
   for (XCUIElement *matchingSnapshot in matchingSnapshots) {
     XCTAssertEqual(matchingSnapshot.elementType, XCUIElementTypeButton);
   }
@@ -335,7 +341,7 @@
   
   XCTAssertEqual(matchingSnapshots.count, 1);
   XCTAssertEqual(matchingSnapshots.lastObject.elementType, XCUIElementTypeButton);
-  XCTAssertTrue([matchingSnapshots.lastObject.label isEqualToString:@"Scrolling"]);
+  XCTAssertTrue([matchingSnapshots.lastObject.label isEqualToString:@"Touch"]);
   
   matchingSnapshots = [self.testedView fb_descendantsMatchingClassChain:@"XCUIElementTypeButton[-10]" shouldReturnAfterFirstMatch:YES];
   XCTAssertEqual(matchingSnapshots.count, 0);

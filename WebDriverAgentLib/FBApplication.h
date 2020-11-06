@@ -32,9 +32,9 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)fb_systemApplication;
 
 /**
- It allows to turn on/off waiting for application quiescence, while performing queries. Defaults to NO.
+ Retrieves the list of all currently active applications
  */
-@property (nonatomic, assign) BOOL fb_shouldWaitForQuiescence;
++ (NSArray<FBApplication *> *)fb_activeApplications;
 
 @end
 

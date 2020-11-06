@@ -30,14 +30,13 @@ static NSString *const axSettingsClassName = @"AXSettings";
 static BOOL FBShouldUseTestManagerForVisibilityDetection = NO;
 static BOOL FBShouldUseSingletonTestManager = YES;
 static BOOL FBShouldUseCompactResponses = YES;
-static BOOL FBShouldWaitForQuiescence = NO;
 static NSString *FBElementResponseAttributes = @"type,label";
 static NSUInteger FBMaxTypingFrequency = 60;
 static NSUInteger FBMjpegServerScreenshotQuality = 25;
 static NSUInteger FBMjpegServerFramerate = 10;
 static NSUInteger FBScreenshotQuality = 1;
 static NSUInteger FBMjpegScalingFactor = 100;
-static NSTimeInterval FBSnapshotTimeout = 15.;
+static NSTimeInterval FBCustomSnapshotTimeout = 15.;
 static BOOL FBShouldUseFirstMatch = NO;
 static BOOL FBShouldBoundElementsByIndex = NO;
 // This is diabled by default because enabling it prevents the accessbility snapshot to be taken
@@ -45,8 +44,10 @@ static BOOL FBShouldBoundElementsByIndex = NO;
 static BOOL FBIncludeNonModalElements = NO;
 static NSString *FBAcceptAlertButtonSelector = @"";
 static NSString *FBDismissAlertButtonSelector = @"";
-static NSString *FBSnapshotMaxDepthKey = @"maxDepth";
+NSString *const FBSnapshotMaxDepthKey = @"maxDepth";
 static NSMutableDictionary *FBSnapshotRequestParameters;
+static NSTimeInterval FBWaitForIdleTimeout = 10.;
+static NSTimeInterval FBAnimationCoolOffTimeout = 2.;
 
 #if !TARGET_OS_TV
 static UIInterfaceOrientation FBScreenshotOrientation = UIInterfaceOrientationUnknown;
@@ -74,6 +75,11 @@ static UIInterfaceOrientation FBScreenshotOrientation = UIInterfaceOrientationUn
 + (void)disableAttributeKeyPathAnalysis
 {
   [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"XCTDisableAttributeKeyPathAnalysis"];
+}
+
++ (void)disableScreenshots
+{
+  [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"DisableScreenshots"];
 }
 
 + (NSRange)bindingPortRange
@@ -170,21 +176,6 @@ static UIInterfaceOrientation FBScreenshotOrientation = UIInterfaceOrientationUn
   return FBShouldUseSingletonTestManager;
 }
 
-+ (BOOL)shouldLoadSnapshotWithAttributes
-{
-  return [XCElementSnapshot fb_attributesForElementSnapshotKeyPathsSelector] != nil;
-}
-
-+ (BOOL)shouldWaitForQuiescence
-{
-  return FBShouldWaitForQuiescence;
-}
-
-+ (void)setShouldWaitForQuiescence:(BOOL)value
-{
-  FBShouldWaitForQuiescence = value;
-}
-
 + (NSUInteger)mjpegServerFramerate
 {
   return FBMjpegServerFramerate;
@@ -213,6 +204,26 @@ static UIInterfaceOrientation FBScreenshotOrientation = UIInterfaceOrientationUn
 + (void)setScreenshotQuality:(NSUInteger)quality
 {
   FBScreenshotQuality = quality;
+}
+
++ (NSTimeInterval)waitForIdleTimeout
+{
+  return FBWaitForIdleTimeout;
+}
+
++ (void)setWaitForIdleTimeout:(NSTimeInterval)timeout
+{
+  FBWaitForIdleTimeout = timeout;
+}
+
++ (NSTimeInterval)animationCoolOffTimeout
+{
+  return FBAnimationCoolOffTimeout;
+}
+
++ (void)setAnimationCoolOffTimeout:(NSTimeInterval)timeout
+{
+  FBAnimationCoolOffTimeout = timeout;
 }
 
 // Works for Simulator and Real devices
@@ -282,14 +293,14 @@ static UIInterfaceOrientation FBScreenshotOrientation = UIInterfaceOrientationUn
   [self configureKeyboardsPreference:isEnabled forPreferenceKey:FBKeyboardPredictionKey];
 }
 
-+ (void)setSnapshotTimeout:(NSTimeInterval)timeout
++ (void)setCustomSnapshotTimeout:(NSTimeInterval)timeout
 {
-  FBSnapshotTimeout = timeout;
+  FBCustomSnapshotTimeout = timeout;
 }
 
-+ (NSTimeInterval)snapshotTimeout
++ (NSTimeInterval)customSnapshotTimeout
 {
-  return FBSnapshotTimeout;
+  return FBCustomSnapshotTimeout;
 }
 
 + (void)setSnapshotMaxDepth:(int)maxDepth

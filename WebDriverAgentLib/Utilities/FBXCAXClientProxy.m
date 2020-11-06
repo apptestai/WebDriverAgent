@@ -9,11 +9,12 @@
 
 #import "FBXCAXClientProxy.h"
 
+#import <objc/runtime.h>
+
+#import "FBConfiguration.h"
 #import "FBLogger.h"
 #import "XCAXClient_iOS.h"
 #import "XCUIDevice.h"
-#import <objc/runtime.h>
-#import "FBConfiguration.h"
 
 static id FBAXClient = nil;
 
@@ -77,6 +78,35 @@ static id FBAXClient = nil;
   return instance;
 }
 
+- (BOOL)setAXTimeout:(NSTimeInterval)timeout error:(NSError **)error
+{
+  return [FBAXClient _setAXTimeout:timeout error:error];
+}
+
+- (XCElementSnapshot *)snapshotForElement:(XCAccessibilityElement *)element
+                               attributes:(NSArray<NSString *> *)attributes
+                                 maxDepth:(nullable NSNumber *)maxDepth
+                                    error:(NSError **)error
+{
+  NSMutableDictionary *parameters = nil;
+  if (nil != maxDepth) {
+    parameters = self.defaultParameters.mutableCopy;
+    parameters[FBSnapshotMaxDepthKey] = maxDepth;
+  }
+  if ([FBAXClient respondsToSelector:@selector(requestSnapshotForElement:attributes:parameters:error:)]) {
+    id result = [FBAXClient requestSnapshotForElement:element
+                                           attributes:attributes
+                                           parameters:[parameters copy]
+                                                error:error];
+    XCElementSnapshot *snapshot = [result valueForKey:@"_rootElementSnapshot"];
+    return nil == snapshot ? result : snapshot;
+  }
+  return [FBAXClient snapshotForElement:element
+                             attributes:attributes
+                             parameters:[parameters copy]
+                                  error:error];
+}
+
 - (NSArray<XCAccessibilityElement *> *)activeApplications
 {
   return [FBAXClient activeApplications];
@@ -107,7 +137,7 @@ static id FBAXClient = nil;
                                                  attributes:attributes
                                                       error:&error];
     if (error) {
-      [FBLogger logFmt:@"Cannot retrieve the list of %@ element attributes: %@", attributes, error.description];
+      [FBLogger logFmt:@"Cannot retrieve element attribute(s) %@. Original error: %@", attributes, error.description];
     }
     return result;
   }

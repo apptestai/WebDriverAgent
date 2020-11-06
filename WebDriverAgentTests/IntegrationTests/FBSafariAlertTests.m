@@ -11,6 +11,7 @@
 
 #import "FBIntegrationTestCase.h"
 #import "FBApplication.h"
+#import "FBTestMacros.h"
 #import "FBMacros.h"
 #import "FBSession.h"
 #import "FBXCodeCompatibility.h"
@@ -51,17 +52,20 @@ static NSString *const SAFARI_BUNDLE_ID = @"com.apple.mobilesafari";
   if (!urlInput.exists) {
     [[[self.safariApp descendantsMatchingType:XCUIElementTypeButton] matchingIdentifier:@"URL"].firstMatch tap];
   }
-  XCTAssertTrue([urlInput fb_clearTextWithError:nil]);
-  XCTAssertTrue([urlInput fb_typeText:@"https://www.seleniumeasy.com/test/javascript-alert-box-demo.html" error:nil]);
+  XCTAssertTrue([urlInput fb_typeText:@"https://www.seleniumeasy.com/test/javascript-alert-box-demo.html"
+                          shouldClear:YES
+                                error:nil]);
   [[[self.safariApp descendantsMatchingType:XCUIElementTypeButton] matchingIdentifier:@"Go"].firstMatch tap];
   XCUIElement *clickMeButton = [[self.safariApp descendantsMatchingType:XCUIElementTypeButton]
                                 matchingPredicate:[NSPredicate predicateWithFormat:@"label == 'Click for Prompt Box'"]].firstMatch;
   XCTAssertTrue([clickMeButton waitForExistenceWithTimeout:15.0]);
   [clickMeButton tap];
   FBAlert *alert = [FBAlert alertWithApplication:self.safariApp];
-  XCTAssertEqualObjects(alert.text, @"Please enter your name");
+  FBAssertWaitTillBecomesTrue([alert.text isEqualToString:@"Please enter your name"]);
   NSArray *buttonLabels = alert.buttonLabels;
   XCTAssertEqualObjects(buttonLabels.firstObject, @"Cancel");
+  XCTAssertNotNil([self.safariApp fb_descendantsMatchingXPathQuery:@"//XCUIElementTypeButton[@label='Cancel' and @visible='true']"
+                                       shouldReturnAfterFirstMatch:YES].firstObject);
   XCTAssertEqualObjects(buttonLabels.lastObject, @"OK");
   XCTAssertTrue([alert typeText:@"yolo" error:nil]);
   XCTAssertTrue([alert acceptWithError:nil]);

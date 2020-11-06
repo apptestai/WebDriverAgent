@@ -34,16 +34,15 @@
   });
   self.testedView = self.testedApplication.otherElements[@"MainView"];
   XCTAssertTrue(self.testedView.exists);
-  [self.testedView fb_nativeResolve];
   FBAssertWaitTillBecomesTrue(self.testedView.buttons.count > 0);
 }
 
 - (XCElementSnapshot *)destinationSnapshot
 {
   XCUIElement *matchingElement = self.testedView.buttons.fb_firstMatch;
-  FBAssertWaitTillBecomesTrue(nil != matchingElement.fb_lastSnapshot);
+  FBAssertWaitTillBecomesTrue(nil != matchingElement.fb_takeSnapshot);
 
-  XCElementSnapshot *snapshot = matchingElement.fb_lastSnapshot;
+  XCElementSnapshot *snapshot = matchingElement.fb_takeSnapshot;
   // Over iOS13, snapshot returns a child.
   // The purpose of here is return a single element so replace children with nil for testing.
   snapshot.children = nil;
@@ -71,7 +70,7 @@
 - (void)testFindMatchesInElement
 {
   NSArray *matchingSnapshots = [FBXPath matchesWithRootElement:self.testedApplication forQuery:@"//XCUIElementTypeButton"];
-  XCTAssertEqual([matchingSnapshots count], 4);
+  XCTAssertEqual([matchingSnapshots count], 5);
   for (id<FBElement> element in matchingSnapshots) {
     XCTAssertTrue([element.wdType isEqualToString:@"XCUIElementTypeButton"]);
   }
@@ -80,7 +79,7 @@
 - (void)testFindMatchesInElementWithDotNotation
 {
   NSArray *matchingSnapshots = [FBXPath matchesWithRootElement:self.testedApplication forQuery:@".//XCUIElementTypeButton"];
-  XCTAssertEqual([matchingSnapshots count], 4);
+  XCTAssertEqual([matchingSnapshots count], 5);
   for (id<FBElement> element in matchingSnapshots) {
     XCTAssertTrue([element.wdType isEqualToString:@"XCUIElementTypeButton"]);
   }

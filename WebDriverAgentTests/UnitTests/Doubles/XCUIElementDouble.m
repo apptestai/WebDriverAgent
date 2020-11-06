@@ -49,7 +49,7 @@
   return @"test";
 }
 
-- (id)fb_cachedSnapshot
+- (id)query
 {
   return nil;
 }
@@ -57,6 +57,16 @@
 - (void)fb_nativeResolve
 {
   self.didResolve = YES;
+}
+
+- (id)fb_takeSnapshot
+{
+  return [self lastSnapshot];
+}
+
+- (NSString *)fb_cacheId
+{
+  return self.wdUID;
 }
 
 - (id)lastSnapshot

@@ -23,6 +23,7 @@
 #import "XCAccessibilityElement.h"
 #import "XCElementSnapshot+FBHelpers.h"
 #import "XCUIDevice+FBHelpers.h"
+#import "XCUIElement+FBCaching.h"
 #import "XCUIElement+FBIsVisible.h"
 #import "XCUIElement+FBUtilities.h"
 #import "XCUIElement+FBWebDriverAttributes.h"
@@ -98,32 +99,18 @@ static NSString* const FBUnknownBundleId = @"unknown";
 
 - (NSDictionary *)fb_tree
 {
-  XCElementSnapshot *snapshot = self.fb_cachedSnapshot ?: self.fb_lastSnapshot;
-  NSMutableDictionary *rootTree = [[self.class dictionaryForElement:snapshot recursive:NO] mutableCopy];
-  NSArray<XCUIElement *> *children = [self fb_filterDescendantsWithSnapshots:snapshot.children
-                                                                     selfUID:snapshot.wdUID
-                                                                onlyChildren:YES];
-  NSMutableArray<NSDictionary *> *childrenTrees = [NSMutableArray arrayWithCapacity:children.count];
-  [self fb_waitUntilSnapshotIsStable];
-  for (XCUIElement* child in children) {
-    XCElementSnapshot *childSnapshot = child.fb_snapshotWithAllAttributes;
-    if (nil == childSnapshot) {
-      [FBLogger logFmt:@"Skipping source dump for '%@' because its snapshot cannot be resolved", child.description];
-      continue;
-    }
-    [childrenTrees addObject:[self.class dictionaryForElement:childSnapshot recursive:YES]];
-  }
-  // This is necessary because web views are not visible in the native page source otherwise
-  [rootTree setObject:childrenTrees.copy forKey:@"children"];
-
-  return rootTree.copy;
+  XCElementSnapshot *snapshot = self.fb_isResolvedFromCache.boolValue
+    ? self.lastSnapshot
+    : [self fb_snapshotWithAllAttributesAndMaxDepth:nil];
+  return [self.class dictionaryForElement:snapshot recursive:YES];
 }
 
 - (NSDictionary *)fb_accessibilityTree
 {
-  [self fb_waitUntilSnapshotIsStable];
-  // We ignore all elements except for the main window for accessibility tree
-  return [self.class accessibilityInfoForElement:(self.fb_snapshotWithAllAttributes ?: self.fb_lastSnapshot)];
+  XCElementSnapshot *snapshot = self.fb_isResolvedFromCache.boolValue
+    ? self.lastSnapshot
+    : [self fb_snapshotWithAllAttributesAndMaxDepth:nil];
+  return [self.class accessibilityInfoForElement:snapshot];
 }
 
 + (NSDictionary *)dictionaryForElement:(XCElementSnapshot *)snapshot recursive:(BOOL)recursive
@@ -248,6 +235,22 @@ static NSString* const FBUnknownBundleId = @"unknown";
     dispatch_semaphore_wait(sem, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)));
   });
   return testmanagerdVersion;
+}
+
+- (BOOL)fb_resetAuthorizationStatusForResource:(long long)resourceId error:(NSError **)error
+{
+  SEL selector = NSSelectorFromString(@"resetAuthorizationStatusForResource:");
+  if (![self respondsToSelector:selector]) {
+    return [[[FBErrorBuilder builder]
+             withDescription:@"'resetAuthorizationStatusForResource' API is only supported for Xcode SDK 11.4 and later"]
+            buildError:error];
+  }
+  NSMethodSignature *signature = [self methodSignatureForSelector:selector];
+  NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
+  [invocation setSelector:selector];
+  [invocation setArgument:&resourceId atIndex:2]; // 0 and 1 are reserved
+  [invocation invokeWithTarget:self];
+  return YES;
 }
 
 @end

@@ -1,18 +1,18 @@
 # https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/macos/
 variables:
   MIN_VM_IMAGE: macOS-10.14
-  MIN_XCODE_VERSION: 10
+  MIN_XCODE_VERSION: 10.2
   # Xcode 10.0 did not have Apple TV
   MIN_TV_XCODE_VERSION: 10.2
   MIN_TV_PLATFORM_VERSION: 12.2
   MIN_TV_DEVICE_NAME: Apple TV
-  MIN_PLATFORM_VERSION: 12.0
+  MIN_PLATFORM_VERSION: 12.2
   MIN_IPHONE_DEVICE_NAME: iPhone X
   MIN_IPAD_DEVICE_NAME: iPad Air 2
   MAX_VM_IMAGE: macOS-10.15
-  MAX_XCODE_VERSION: 11.5
-  MAX_PLATFORM_VERSION: 13.5
-  MAX_PLATFORM_VERSION_TV: 13.4  # tvOS does not have 13.5
+  MAX_XCODE_VERSION: 12
+  MAX_PLATFORM_VERSION: 14.0
+  MAX_PLATFORM_VERSION_TV: 14.0
   MAX_IPHONE_DEVICE_NAME: iPhone 11 Pro Max
   MAX_TV_DEVICE_NAME: Apple TV 4K
   MAX_IPAD_DEVICE_NAME: iPad Pro (11-inch) (2nd generation)
@@ -301,9 +301,12 @@ stages:
 
   - job: Node_Integration_Tests
     variables:
-      XCODE_VERSION: $(MAX_XCODE_VERSION)
-      DEVICE_NAME: $(MAX_IPHONE_DEVICE_NAME)
-      PLATFORM_VERSION: $(MAX_PLATFORM_VERSION)
+      # XCODE_VERSION: $(MAX_XCODE_VERSION)
+      # DEVICE_NAME: $(MAX_IPHONE_DEVICE_NAME)
+      # PLATFORM_VERSION: $(MAX_PLATFORM_VERSION)
+      XCODE_VERSION: 11.7
+      DEVICE_NAME: iPhone 11 Pro Max
+      PLATFORM_VERSION: 13.7
     steps:
     - template: azure-templates/node_setup_steps.yml
     - script: npm install

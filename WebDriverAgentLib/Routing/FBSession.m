@@ -16,13 +16,14 @@
 #import "FBApplication.h"
 #import "FBConfiguration.h"
 #import "FBElementCache.h"
+#import "FBExceptions.h"
 #import "FBMacros.h"
 #import "FBSpringboardApplication.h"
 #import "FBXCodeCompatibility.h"
 #import "XCAccessibilityElement.h"
+#import "XCUIApplication+FBQuiescence.h"
 #import "XCUIElement.h"
 
-NSString *const FBApplicationCrashedException = @"FBApplicationCrashedException";
 /*!
  The intial value for the default application property.
  Setting this value to `defaultActiveApplication` property forces WDA to use the internal
@@ -189,10 +190,14 @@ static FBSession *_activeSession = nil;
 {
   FBApplication *app = [self registerApplicationWithBundleId:bundleIdentifier];
   if (app.fb_state < 2) {
-    if (nil != shouldWaitForQuiescence) {
+    if (nil == shouldWaitForQuiescence) {
+      // Iherit the quiescence check setting from the main app under test by default
+      FBApplication *testedApplication = nil == self.testedApplicationBundleId
+        ? nil
+        : [self.applications objectForKey:self.testedApplicationBundleId];
+      app.fb_shouldWaitForQuiescence = nil == testedApplication || testedApplication.fb_shouldWaitForQuiescence;
+    } else {
       app.fb_shouldWaitForQuiescence = [shouldWaitForQuiescence boolValue];
-    } else if ([bundleIdentifier isEqualToString:self.testedApplicationBundleId]) {
-      app.fb_shouldWaitForQuiescence = FBConfiguration.shouldWaitForQuiescence;
     }
     app.launchArguments = arguments ?: @[];
     app.launchEnvironment = environment ?: @{};

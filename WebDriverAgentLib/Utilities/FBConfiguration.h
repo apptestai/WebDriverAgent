@@ -15,6 +15,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+extern NSString *const FBSnapshotMaxDepthKey;
+
 /**
  Accessors for Global Constants.
  */
@@ -38,6 +40,9 @@ NS_ASSUME_NONNULL_BEGIN
 /*! Disables attribute key path analysis, which will cause XCTest on Xcode 9.x to ignore some elements */
 + (void)disableAttributeKeyPathAnalysis;
 
+/*! Disables XCTest from automated screenshots taking */
++ (void)disableScreenshots;
+
 /* The maximum typing frequency for all typing activities */
 + (void)setMaxTypingFrequency:(NSUInteger)value;
 + (NSUInteger)maxTypingFrequency;
@@ -45,10 +50,6 @@ NS_ASSUME_NONNULL_BEGIN
 /* Use singleton test manager proxy */
 + (void)setShouldUseSingletonTestManager:(BOOL)value;
 + (BOOL)shouldUseSingletonTestManager;
-
-/* Whether to wait for quiescence on application startup */
-+ (void)setShouldWaitForQuiescence:(BOOL)value;
-+ (BOOL)shouldWaitForQuiescence;
 
 /**
  * Extract switch value from arguments
@@ -107,8 +108,6 @@ NS_ASSUME_NONNULL_BEGIN
  */
 + (BOOL)verboseLoggingEnabled;
 
-+ (BOOL)shouldLoadSnapshotWithAttributes;
-
 /**
  * Configure keyboards preference to make test running stable
  */
@@ -145,8 +144,8 @@ typedef NS_ENUM(NSInteger, FBConfigurationKeyboardPreference) {
  *
  * @param timeout The number of float seconds to wait (15 seconds by default)
  */
-+ (void)setSnapshotTimeout:(NSTimeInterval)timeout;
-+ (NSTimeInterval)snapshotTimeout;
++ (void)setCustomSnapshotTimeout:(NSTimeInterval)timeout;
++ (NSTimeInterval)customSnapshotTimeout;
 
 /**
  Sets maximum depth for traversing elements tree from parents to children while requesting XCElementSnapshot.
@@ -201,6 +200,28 @@ typedef NS_ENUM(NSInteger, FBConfigurationKeyboardPreference) {
  */
 + (void)setReduceMotionEnabled:(BOOL)isEnabled;
 + (BOOL)reduceMotionEnabled;
+
+/**
+ * Set the idling timeout. If the timeout expires then WDA
+ * tries to interact with the application even if it is not idling.
+ * Setting it to zero disables idling checks.
+ * The default timeout is set to 10 seconds.
+ *
+ * @param timeout The actual timeout value in float seconds
+ */
++ (void)setWaitForIdleTimeout:(NSTimeInterval)timeout;
++ (NSTimeInterval)waitForIdleTimeout;
+
+/**
+ * Set the idling timeout for different actions, for example events synthesis, rotation change,
+ * etc. If the timeout expires then WDA tries to interact with the application even if it is not idling.
+ * Setting it to zero disables idling checks.
+ * The default timeout is set to 2 seconds.
+ *
+ * @param timeout The actual timeout value in float seconds
+ */
++ (void)setAnimationCoolOffTimeout:(NSTimeInterval)timeout;
++ (NSTimeInterval)animationCoolOffTimeout;
 
 /**
  Enforces the page hierarchy to include non modal elements,
