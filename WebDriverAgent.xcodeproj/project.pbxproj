@@ -17,7 +17,6 @@
 		315A15012518CB8700A3A064 /* TouchableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 315A15002518CB8700A3A064 /* TouchableView.m */; };
 		315A15072518CC2800A3A064 /* TouchSpotView.m in Sources */ = {isa = PBXBuildFile; fileRef = 315A15062518CC2800A3A064 /* TouchSpotView.m */; };
 		315A150A2518D6F400A3A064 /* TouchViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 315A15092518D6F400A3A064 /* TouchViewController.m */; };
-		315B7EE52519F90100E28DA3 /* WebDriverAgentLib.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = EE158A991CBD452B00A3E3F0 /* WebDriverAgentLib.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		31EC77FC224F7D0600380FCD /* XCUIApplicationProcessQuiescence.h in Headers */ = {isa = PBXBuildFile; fileRef = 31EC77FA224F7D0600380FCD /* XCUIApplicationProcessQuiescence.h */; };
 		31EC77FD224F7D0600380FCD /* XCUIApplicationProcessQuiescence.h in Headers */ = {isa = PBXBuildFile; fileRef = 31EC77FA224F7D0600380FCD /* XCUIApplicationProcessQuiescence.h */; };
 		31EC77FE224F7D0600380FCD /* XCUIApplicationProcessQuiescence.m in Sources */ = {isa = PBXBuildFile; fileRef = 31EC77FB224F7D0600380FCD /* XCUIApplicationProcessQuiescence.m */; };
@@ -745,6 +744,8 @@
 		EEE9B4731CD02B88009D2030 /* FBRunLoopSpinner.m in Sources */ = {isa = PBXBuildFile; fileRef = EEE9B4711CD02B88009D2030 /* FBRunLoopSpinner.m */; };
 		EEEC7C921F21F27A0053426C /* FBPredicate.h in Headers */ = {isa = PBXBuildFile; fileRef = EEEC7C901F21F27A0053426C /* FBPredicate.h */; };
 		EEEC7C931F21F27A0053426C /* FBPredicate.m in Sources */ = {isa = PBXBuildFile; fileRef = EEEC7C911F21F27A0053426C /* FBPredicate.m */; };
+		EFC3EBC42555521F00F6A1D4 /* FBNetworkUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = EFC3EBC22555521E00F6A1D4 /* FBNetworkUtils.m */; };
+		EFC3EBC52555521F00F6A1D4 /* FBNetworkUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = EFC3EBC32555521F00F6A1D4 /* FBNetworkUtils.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1317,6 +1318,8 @@
 		EEEC7C901F21F27A0053426C /* FBPredicate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FBPredicate.h; sourceTree = "<group>"; };
 		EEEC7C911F21F27A0053426C /* FBPredicate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FBPredicate.m; sourceTree = "<group>"; };
 		EEF9882A1C486603005CA669 /* WebDriverAgentRunner.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WebDriverAgentRunner.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		EFC3EBC22555521E00F6A1D4 /* FBNetworkUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBNetworkUtils.m; sourceTree = "<group>"; };
+		EFC3EBC32555521F00F6A1D4 /* FBNetworkUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBNetworkUtils.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1786,6 +1789,8 @@
 		EE9AB78E1CAEDF0C008C271F /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				EFC3EBC32555521F00F6A1D4 /* FBNetworkUtils.h */,
+				EFC3EBC22555521E00F6A1D4 /* FBNetworkUtils.m */,
 				13815F6D2328D20400CDAB61 /* FBActiveAppDetectionPoint.h */,
 				13815F6E2328D20400CDAB61 /* FBActiveAppDetectionPoint.m */,
 				719CD8F62126C78F00C7D0C2 /* FBAlertsMonitor.h */,
@@ -2500,6 +2505,7 @@
 				EE35AD381E3B77D600A02D78 /* XCSymbolicationRecord.h in Headers */,
 				EE35AD6E1E3B77D600A02D78 /* XCUIDevice.h in Headers */,
 				71BD20731F86116100B36EC2 /* XCUIApplication+FBTouchAction.h in Headers */,
+				EFC3EBC52555521F00F6A1D4 /* FBNetworkUtils.h in Headers */,
 				EE158ACE1CBD456F00A3E3F0 /* FBCommandHandler.h in Headers */,
 				EE158AC81CBD456F00A3E3F0 /* FBSessionCommands.h in Headers */,
 				641EE70B2240CE2D00173FCB /* FBTVNavigationTracker.h in Headers */,
@@ -3069,6 +3075,7 @@
 				641EE70E2240CE4800173FCB /* FBTVNavigationTracker.m in Sources */,
 				71BD20741F86116100B36EC2 /* XCUIApplication+FBTouchAction.m in Sources */,
 				EE158AE71CBD456F00A3E3F0 /* FBWebServer.m in Sources */,
+				EFC3EBC42555521F00F6A1D4 /* FBNetworkUtils.m in Sources */,
 				31EC77FE224F7D0600380FCD /* XCUIApplicationProcessQuiescence.m in Sources */,
 				715557D4211DBCE700613B26 /* FBTCPSocket.m in Sources */,
 				EE3A18631CDE618F00DE4205 /* FBErrorBuilder.m in Sources */,
