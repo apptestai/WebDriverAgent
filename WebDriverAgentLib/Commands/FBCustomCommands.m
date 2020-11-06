@@ -29,6 +29,9 @@
 #import "XCUIElement+FBIsVisible.h"
 #import "XCUIElementQuery.h"
 #import "FBUnattachedAppLauncher.h"
+//ADDED BY MO: ipaddress
+#import "FBNetworkUtils.h"
+//END
 
 @implementation FBCustomCommands
 
@@ -61,6 +64,10 @@
     [[FBRoute POST:@"/wda/resetAppAuth"] respondWithTarget:self action:@selector(handleResetAppAuth:)],
     [[FBRoute GET:@"/wda/device/info"].withoutSession respondWithTarget:self action:@selector(handleGetDeviceInfo:)],
     [[FBRoute OPTIONS:@"/*"].withoutSession respondWithTarget:self action:@selector(handlePingCommand:)],
+    
+    //ADDED BY MO: waitForIdle
+    [[FBRoute POST:@"/wda/waitForIdle"] respondWithTarget:self action:@selector(handleWaitForIdle:)],
+    //END
   ];
 }
 
@@ -320,6 +327,9 @@
 #else
     @"isSimulator": @(NO),
 #endif
+    // ADDED BY MO: ip address
+    @"ipaddress": FBNetworkUtils.ipaddress,
+    //END
   });
 }
 
@@ -374,5 +384,17 @@
 
   return [localTimeZone name];
 }
+
+//ADDED BY MO: handle waitForIdle
+static NSString *const DEFAULT_TIMEOUT = @"5000";
++ (id<FBResponsePayload>)handleWaitForIdle:(FBRouteRequest *)request
+{
+  NSDate * start = [NSDate date];
+  FBApplication *application = request.session.activeApplication ?: [FBApplication fb_activeApplication];
+  [application fb_waitUntilSnapshotIsStable];
+  NSTimeInterval duration = [start timeIntervalSinceNow]*-1;
+  return FBResponseWithObject(@{@"value": [NSString stringWithFormat:@"%f seconds", duration], @"version": @"v1.0"});
+}
+//END
 
 @end

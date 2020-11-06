@@ -115,6 +115,25 @@ NS_ASSUME_NONNULL_BEGIN
  */
 + (NSInteger)fb_testmanagerdVersion;
 
+/**
+ ADDED BY MO:  XCElementSnapshot#recursiveDescriptionIncludingAccessibilityElement
+ Return application elements tree in form of xml string (faster than `fb_xmlRepresentation`)
+
+ @returns The XML representation of the current element as a string
+ */
+
+- (NSString *)fb_descriptionRepresentation_v2;
+//END
+
+/**
+ ADDED BY MO:  bounds of application screen in points, "[UIScreen mainScreen].bounds" data is invalid.
+ Return bounds of application screen in points
+
+ @returns bounds of application screen in points
+ */
+
+- (CGRect)fb_screenBounds;
+//END
 @end
 
 NS_ASSUME_NONNULL_END

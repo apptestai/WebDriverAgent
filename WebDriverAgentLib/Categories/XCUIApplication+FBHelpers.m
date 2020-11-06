@@ -265,4 +265,96 @@ static NSString* const FBUnknownBundleId = @"unknown";
   return YES;
 }
 
+// ADDED BY MO
+static NSRegularExpression *pidRegex = nil;
+-(void)findBundleIDs:(NSDictionary *)bundleIDs inAccessibilityDesc:(NSString *)desc {
+  if (pidRegex == nil) {
+    pidRegex = [NSRegularExpression regularExpressionWithPattern:@" pid: ([0-9]+), elementOrHash.elementID: " options:NSRegularExpressionCaseInsensitive error:nil];
+  }
+  
+  NSArray *matches = [pidRegex matchesInString:desc options:0 range:NSMakeRange(0, [desc length])];
+  for (NSTextCheckingResult *match in matches) {
+    NSString *strPid = [desc substringWithRange:[match rangeAtIndex:1]];
+    if (![bundleIDs objectForKey:strPid]) {
+      FBApplication *app = [FBApplication fb_applicationWithPID:strPid.intValue];
+      if (app && app.bundleID) {
+        [bundleIDs setValue:app.bundleID forKey:strPid];
+      } else {
+        [bundleIDs setValue:@"" forKey:strPid];
+      }
+    }
+  }
+}
+//END
+
+// ADDED BY MO
+- (NSString *)fb_descriptionRepresentation_v2 {
+  // bundleIDs
+  NSString *pid = [NSString stringWithFormat:@"%ld", (long)self.processID];
+  NSMutableDictionary<NSString *, NSString *> *bundleIDs = [NSMutableDictionary dictionary];
+  [bundleIDs setValue:self.bundleID forKey:pid];
+  
+  // accessibility Description
+  NSMutableArray<NSString *> *childrenDescriptions = [NSMutableArray array];
+  for (XCUIElement *child in [self.fb_query childrenMatchingType:XCUIElementTypeAny].allElementsBoundByAccessibilityElement) {
+    NSString *desc = child.fb_lastSnapshot.recursiveDescriptionIncludingAccessibilityElement;
+    if (desc != nil) {
+      [self findBundleIDs:bundleIDs inAccessibilityDesc:desc];
+      [childrenDescriptions addObject:desc];
+    }
+  }
+  
+  // Application Desc
+  UIInterfaceOrientation orientation = self.interfaceOrientation;
+  int rotation = 0;
+  CGRect bounds = self.fb_screenBounds;
+  if (orientation == UIInterfaceOrientationLandscapeRight) {
+    rotation = 1;
+  } else if (orientation == UIInterfaceOrientationPortraitUpsideDown) {
+    rotation = 2;
+  } else if (orientation == UIInterfaceOrientationLandscapeLeft) {
+    rotation = 3;
+  }
+  
+  NSString *applicationDescription = nil;
+  NSData *bundleIDsJson = [NSJSONSerialization dataWithJSONObject:bundleIDs options:0 error:nil];
+  if (bundleIDsJson) {
+    NSString *bundleIDsDesc = [[NSString alloc] initWithData:bundleIDsJson encoding:NSUTF8StringEncoding];
+    applicationDescription = [NSString stringWithFormat:@"BundleIDs, %@\n\nApplication, bundle: %@, rotation: %d, {{%.1f, %.1f}, {%.1f, %.1f}}, pid: %@",
+                              bundleIDsDesc, self.bundleID, rotation, bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height, pid];
+  } else {
+    applicationDescription = [NSString stringWithFormat:@"Application, bundle: %@, rotation: %d, {{%.1f, %.1f}, {%.1f, %.1f}}, pid: %@",
+                              self.bundleID, rotation, bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height, pid];
+  }
+  
+  if (0 == childrenDescriptions.count) {
+    return applicationDescription;
+  }
+  
+  [childrenDescriptions insertObject:applicationDescription atIndex:0];
+  return [childrenDescriptions componentsJoinedByString:@"\n\n"];
+}
+//END
+
+// ADDED BY MO
+- (CGRect)fb_screenBounds
+{
+  UIInterfaceOrientation orientation = self.interfaceOrientation;
+  CGRect rect = self.frame;
+  CGFloat x = rect.origin.x;
+  CGFloat y = rect.origin.y;
+  CGFloat width = rect.size.width;
+  CGFloat height = rect.size.height;
+  
+  if (orientation == UIInterfaceOrientationLandscapeRight) {
+    width = rect.size.height;
+    height = rect.size.width;
+  } else if (orientation == UIInterfaceOrientationPortraitUpsideDown) {
+  } else if (orientation == UIInterfaceOrientationLandscapeLeft) {
+    width = rect.size.height;
+    height = rect.size.width;
+  }
+  return CGRectMake(x, y, width, height);
+}
+//END
 @end

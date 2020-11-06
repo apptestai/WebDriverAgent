@@ -24,6 +24,9 @@
 #import "XCUIDevice+FBHealthCheck.h"
 #import "XCUIDevice+FBHelpers.h"
 #import "XCUIApplicationProcessDelay.h"
+// ADDED BY MO: When lanuch the test app, dismiss system alerts
+#import "FBAlert.h"
+//END
 
 static NSString* const USE_COMPACT_RESPONSES = @"shouldUseCompactResponses";
 static NSString* const ELEMENT_RESPONSE_ATTRIBUTES = @"elementResponseAttributes";
@@ -45,6 +48,17 @@ static NSString* const INCLUDE_NON_MODAL_ELEMENTS = @"includeNonModalElements";
 static NSString* const ACCEPT_ALERT_BUTTON_SELECTOR = @"acceptAlertButtonSelector";
 static NSString* const DISMISS_ALERT_BUTTON_SELECTOR = @"dismissAlertButtonSelector";
 static NSString* const SCREENSHOT_ORIENTATION = @"screenshotOrientation";
+//ADDED BY MO: for solving setValue issue(>= iOS 13.0) - In the "Sign In with Apple ID" popup of App Store, the password input field is not processed with "An element command could not be completed because the element is in an invalid state (e.g. attempting to click a disabled element)" error.
+static NSString* const IGNORE_KEYBOARD_VISIBILITY_FOR_INPUT = @"ignoreKeyboardVisibilityForInput";
+//END
+
+//ADDED BY MO:for solving performance of source api. The table widget have a lot of cells that are outside of the device screen.
+static NSString* const SNAPSHOT_MAX_CHILDREN = @"snapshotMaxChildren";
+//END
+
+//ADDED BY MO:for solving an issue that when the page_source api is called, a popup is dismissed. ref. FBActiveAppDetectionPoint.m
+static NSString* const ACTIVE_APP_DETECTION_POINT_VALUE = @"activeAppDetectionPointValue";
+//END
 
 
 @implementation FBSessionCommands
@@ -93,6 +107,18 @@ static NSString* const SCREENSHOT_ORIENTATION = @"screenshotOrientation";
 
 + (id<FBResponsePayload>)handleCreateSession:(FBRouteRequest *)request
 {
+  // ADDED BY MO: When lanuch the test app, dismiss system alerts
+  // TODO: requried solution to dismiss system alerts
+  //       unable to found solution
+  @try {
+    [[self class] fb_alertDismiss];
+    [[self class] fb_alertDismiss];
+    //END
+  } @catch (NSException *ex) {
+    [FBLogger logFmt:@"Can not dismiss alert: %@", ex.reason];
+  }
+  //END
+  
   NSDictionary<NSString *, id> *requirements;
   NSError *error;
   if (![request.arguments[@"capabilities"] isKindOfClass:NSDictionary.class]) {
@@ -260,10 +286,20 @@ static NSString* const SCREENSHOT_ORIENTATION = @"screenshotOrientation";
       BOUND_ELEMENTS_BY_INDEX: @([FBConfiguration boundElementsByIndex]),
       REDUCE_MOTION: @([FBConfiguration reduceMotionEnabled]),
       DEFAULT_ACTIVE_APPLICATION: request.session.defaultActiveApplication,
-      ACTIVE_APP_DETECTION_POINT: FBActiveAppDetectionPoint.sharedInstance.stringCoordinates,
+      // MODIFIED BY MO:for solving an issue that when the page_source api is called, a popup is dismissed. ref. FBActiveAppDetectionPoint.m
+//      ACTIVE_APP_DETECTION_POINT: FBActiveAppDetectionPoint.sharedInstance.stringCoordinates,
+      ACTIVE_APP_DETECTION_POINT: FBConfiguration.activeAppDetectionPoint,
+      ACTIVE_APP_DETECTION_POINT_VALUE: FBActiveAppDetectionPoint.sharedInstance.stringCoordinates,
+      // END
       INCLUDE_NON_MODAL_ELEMENTS: @([FBConfiguration includeNonModalElements]),
       ACCEPT_ALERT_BUTTON_SELECTOR: FBConfiguration.acceptAlertButtonSelector,
       DISMISS_ALERT_BUTTON_SELECTOR: FBConfiguration.dismissAlertButtonSelector,
+      //ADDED BY MO: for solving setValue issue(>= iOS 13.0) - In the "Sign In with Apple ID" popup of App Store, the password input field is not processed with "An element command could not be completed because the element is in an invalid state (e.g. attempting to click a disabled element)" error.
+      IGNORE_KEYBOARD_VISIBILITY_FOR_INPUT: @([FBConfiguration ignoreKeyboardVisibilityForInput]),
+      //END
+      //ADDED BY MO:for solving performance of source api. The table widget have a lot of cells that are outside of the device screen.
+      SNAPSHOT_MAX_CHILDREN: @([FBConfiguration snapshotMaxChildren]),
+      //END
 #if !TARGET_OS_TV
       SCREENSHOT_ORIENTATION: [FBConfiguration humanReadableScreenshotOrientation],
 #endif
@@ -320,6 +356,9 @@ static NSString* const SCREENSHOT_ORIENTATION = @"screenshotOrientation";
     request.session.defaultActiveApplication = (NSString *)[settings objectForKey:DEFAULT_ACTIVE_APPLICATION];
   }
   if (nil != [settings objectForKey:ACTIVE_APP_DETECTION_POINT]) {
+    // ADDED BY MO: for solving an issue that when the page_source api is called, a popup is dismissed. ref. FBActiveAppDetectionPoint.m
+    [FBConfiguration setActiveAppDetectionPoint:(NSString *)[settings objectForKey:ACTIVE_APP_DETECTION_POINT]];
+    // END
     NSError *error;
     if (![FBActiveAppDetectionPoint.sharedInstance setCoordinatesWithString:(NSString *)[settings objectForKey:ACTIVE_APP_DETECTION_POINT]
                                                                       error:&error]) {
@@ -339,6 +378,18 @@ static NSString* const SCREENSHOT_ORIENTATION = @"screenshotOrientation";
   if (nil != [settings objectForKey:DISMISS_ALERT_BUTTON_SELECTOR]) {
     [FBConfiguration setDismissAlertButtonSelector:(NSString *)[settings objectForKey:DISMISS_ALERT_BUTTON_SELECTOR]];
   }
+  
+  //ADDED BY MO: for solving setValue issue(>= iOS 13.0) - In the "Sign In with Apple ID" popup of App Store, the password input field is not processed with "An element command could not be completed because the element is in an invalid state (e.g. attempting to click a disabled element)" error.
+  if (nil != [settings objectForKey:IGNORE_KEYBOARD_VISIBILITY_FOR_INPUT]) {
+    [FBConfiguration setIgnoreKeyboardvisibilityForInput:[[settings objectForKey:IGNORE_KEYBOARD_VISIBILITY_FOR_INPUT] boolValue]];
+  }
+  //END
+  
+  //ADDED BY MO:for solving performance of source api. The table widget have a lot of cells that are outside of the device screen.
+  if (nil != [settings objectForKey:SNAPSHOT_MAX_CHILDREN]) {
+    [FBConfiguration setSnapshotMaxChildren:[[settings objectForKey:SNAPSHOT_MAX_CHILDREN] intValue]];
+  }
+  //END
 
 #if !TARGET_OS_TV
   if (nil != [settings objectForKey:SCREENSHOT_ORIENTATION]) {
@@ -386,5 +437,28 @@ static NSString* const SCREENSHOT_ORIENTATION = @"screenshotOrientation";
     @"CFBundleIdentifier": application.bundleID ?: [NSNull null],
   };
 }
+
+// ADDED BY MO: When lanuch the test app, dismiss system alerts
++ (BOOL)fb_alertDismiss
+{
+  @try {
+    FBApplication *application = [FBApplication fb_activeApplication];
+    FBAlert *alert = [FBAlert alertWithApplication:application];
+    NSError *error;
+    
+    if (!alert.isPresent) {
+      return YES;
+    }
+    if (![alert dismissWithError:&error]) {
+      NSLog(@"fb_alertDismissError: %@", error);
+      return NO;
+    }
+    return YES;
+  } @catch (NSException *exception) {
+    NSLog(@"%@", exception.reason);
+  }
+  return NO;
+}
+//END
 
 @end

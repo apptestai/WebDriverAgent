@@ -16,7 +16,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FBActiveAppDetectionPoint : NSObject
 
 @property (nonatomic) CGPoint coordinates;
-
+// ADDED BY MO
+@property (nonatomic, copy, nullable) NSString *platform;
+// END
 /**
  * Retrieves singleton representation of the current class
  */
@@ -52,6 +54,22 @@ NS_ASSUME_NONNULL_BEGIN
  * @returns Point coordinates as `x,y` string
  */
 - (NSString *)stringCoordinates;
+
+// ADDED BY MO: extends setCoordinatesWithString method by reserved types such as left-top, top, right-top, center, left-bottom, bottom, right-bottom
+/**
+  parse coordinate with reserved keywords such as left-top, top, right-top, center, left-bottom, bottom, right-bottom
+  @param coordinatesType reserved keywords such as left-top, top, right-top, center, left-bottom, bottom, right-bottom
+                        left-top    : MIN(w, h)*0.2, MIN(w, h)*0.2
+                        top         : w/2, MIN(w, h)*0.2
+                        right-top   : w-MIN(w, h)*0.2, MIN(w, h)*0.2
+                        center      : w/2, h/2
+                        left-bottom : MIN(w, h)*0.2, h-MIN(w, h)*0.2
+                        bottom      : w/2, h-MIN(w, h)*0.2
+                        right-bottom: w-MIN(w, h)*0.2, h-MIN(w, h)*0.2
+  @return CGPoint. Can return CGPointZero if error occured
+ */
+- (CGPoint)parseCoordinatesWithReservedType:(NSString *)coordinatesType;
+//END
 
 @end
 
