@@ -81,6 +81,7 @@
     "Scripts/build.sh",
     "Scripts/carthage-wrapper.sh",
     "Scripts/fetch-prebuilt-wda.js",
+    "Scripts/build-wda.sh",
     "Cartfile",
     "Cartfile.resolved",
     "Configurations",
