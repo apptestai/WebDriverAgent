@@ -289,6 +289,8 @@ static NSRegularExpression *pidRegex = nil;
 
 // ADDED BY MO
 - (NSString *)fb_descriptionRepresentation_v2 {
+  [self fb_waitUntilSnapshotIsStable];
+  
   // bundleIDs
   NSString *pid = [NSString stringWithFormat:@"%ld", (long)self.processID];
   NSMutableDictionary<NSString *, NSString *> *bundleIDs = [NSMutableDictionary dictionary];

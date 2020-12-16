@@ -197,6 +197,10 @@
   else if ([self.platform hasPrefix:@"iPhone11"] || [self.platform hasPrefix:@"iPhone12"])
     bounds = CGRectMake(0, 0, 414, 896);
   
+  // iPhone 12
+  else if ([self.platform hasPrefix:@"iPhone13"])
+    bounds = CGRectMake(0, 0, 390, 844);
+  
   if (MAX(bounds.size.width, bounds.size.height) > (CGFloat) 480) {
     UIDeviceOrientation orientation = XCUIDevice.sharedDevice.orientation;
     if (orientation == UIInterfaceOrientationLandscapeRight) {
