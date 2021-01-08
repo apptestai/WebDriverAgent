@@ -50,8 +50,14 @@
   if ([FBConfiguration ignoreKeyboardVisibilityForInput]) {
     return YES;
   }
+  //END
   
-  return self.hasKeyboardFocus || [[[self.fb_query descendantsMatchingType:XCUIElementTypeAny]
+  //MODIFIED BY TAK: When the element is autofocused in WebKitView, the element's hasKeyboardFocus value is 'YES' eventhough there is no keyboard revealed. Therefore a function, [FBKeyboard typeText:text frequency:frequency error:error], malfunctions.
+//
+//  return self.hasKeyboardFocus || [[[self.fb_query descendantsMatchingType:XCUIElementTypeAny]
+//   matchingPredicate:[NSPredicate predicateWithFormat:@"hasKeyboardFocus == YES"]]
+//  count] > 0;
+  return [[[self.fb_query descendantsMatchingType:XCUIElementTypeAny]
    matchingPredicate:[NSPredicate predicateWithFormat:@"hasKeyboardFocus == YES"]]
   count] > 0;
   //END
