@@ -191,13 +191,24 @@ static bool fb_isLocked;
              withDescriptionFormat:@"'%@' is not a valid URL", url]
             buildError:error];
   }
-
-  id siriService = [self valueForKey:@"siriService"];
-  if (nil != siriService) {
-    return [self fb_activateSiriVoiceRecognitionWithText:[NSString stringWithFormat:@"Open {%@}", url] error:error];
-  }
+// MODIFIED BY MO: not used
+//  id siriService = [self valueForKey:@"siriService"];
+//  if (nil != siriService) {
+//    return [self fb_activateSiriVoiceRecognitionWithText:[NSString stringWithFormat:@"Open {%@}", url] error:error];
+//  }
+//  END
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+  //ADDED BY MO: activate WebDriverAgent Application(UI)
+  id siriService = [self valueForKey:@"siriService"];
+  if (nil != siriService) {
+    [self fb_activateSiriVoiceRecognitionWithText:[NSString stringWithFormat:@"Open {%@}", @"WebDriverAgentRunner-Runner"] error:error];
+    //wait for opennig
+    if ([FBSpringboardApplication.fb_springboard waitForExistenceWithTimeout:3]) {
+      //do nothing
+    }
+  }
+  // END
   // The link never gets opened by this method: https://forums.developer.apple.com/thread/25355
   if (![[UIApplication sharedApplication] openURL:parsedUrl]) {
 #pragma clang diagnostic pop
