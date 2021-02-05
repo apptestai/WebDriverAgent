@@ -204,7 +204,7 @@ static bool fb_isLocked;
   if (nil != siriService) {
     [self fb_activateSiriVoiceRecognitionWithText:[NSString stringWithFormat:@"Open {%@}", @"WebDriverAgentRunner-Runner"] error:error];
     //wait for opennig
-    if ([FBSpringboardApplication.fb_springboard waitForExistenceWithTimeout:3]) {
+    if ([FBSpringboardApplication.fb_springboard.staticTexts[@"WebDriverAgentRunner"] waitForExistenceWithTimeout:3]) {
       //do nothing
     }
   }
